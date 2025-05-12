@@ -58,12 +58,12 @@ public class TransactionRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
         entityManager.persist(account);
 
         SubAccount subAccount = new SubAccount();
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setAccount(account);
         subAccount.setAccountNumber("1234-5678-9012-3456");
         subAccount.setBalance(BigDecimal.ZERO);
@@ -93,7 +93,7 @@ public class TransactionRepositoryTest {
 
         assertThat(saved.getTransactionId()).isNotNull();
         assertThat(saved.getAmount()).isEqualTo(BigDecimal.valueOf(100.00));
-        assertThat(saved.getSubAccount().getName()).isEqualTo("Savings Card");
+        assertThat(saved.getSubAccount().getAccountName()).isEqualTo("Savings Card");
         assertThat(saved.getUser().getUsername()).isEqualTo("testuser");
         assertThat(saved.getTransactionType().getTypeName()).isEqualTo("Salary");
     }
@@ -108,12 +108,12 @@ public class TransactionRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
         entityManager.persist(account);
 
         SubAccount subAccount = new SubAccount();
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setAccount(account);
         subAccount.setAccountNumber("1234-5678-9012-3456");
         subAccount.setBalance(BigDecimal.ZERO);
@@ -144,7 +144,7 @@ public class TransactionRepositoryTest {
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found with id: " + transaction.getTransactionId()));
 
         assertThat(found.getAmount()).isEqualTo(BigDecimal.valueOf(100.00));
-        assertThat(found.getSubAccount().getName()).isEqualTo("Savings Card");
+        assertThat(found.getSubAccount().getAccountName()).isEqualTo("Savings Card");
     }
 
     @Test
@@ -167,12 +167,12 @@ public class TransactionRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
         entityManager.persist(account);
 
         SubAccount subAccount = new SubAccount();
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setAccount(account);
         subAccount.setAccountNumber("1234-5678-9012-3456");
         subAccount.setBalance(BigDecimal.ZERO);

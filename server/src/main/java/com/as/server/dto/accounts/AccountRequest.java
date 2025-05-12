@@ -17,8 +17,8 @@ import java.util.Objects;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-05-07T20:09:16.831236500+08:00[Asia/Shanghai]")
 public class AccountRequest {
 
-  @JsonProperty("name")
-  private String name;
+  @JsonProperty("accountName")
+  private String accountName;
 
   @JsonProperty("typeId")
   private Integer typeId;
@@ -62,24 +62,24 @@ public class AccountRequest {
   @JsonProperty("type")
   private TypeEnum type;
 
-  public AccountRequest name(String name) {
-    this.name = name;
+  public AccountRequest accountName(String accountName) {
+    this.accountName = accountName;
     return this;
   }
 
   /**
    * 账户名称
-   * @return name
+   * @return accountName
    */
   @NotNull
   @Size(max = 100)
-  @Schema(name = "name", description = "账户名称", required = true)
-  public String getName() {
-    return name;
+  @Schema(name = "accountName", description = "账户名称", required = true)
+  public String getaccountName() {
+    return accountName;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setaccountName(String accountName) {
+    this.accountName = accountName;
   }
 
   public AccountRequest typeId(Integer typeId) {
@@ -129,21 +129,21 @@ public class AccountRequest {
       return false;
     }
     AccountRequest accountRequest = (AccountRequest) o;
-    return Objects.equals(this.name, accountRequest.name) &&
+    return Objects.equals(this.accountName, accountRequest.accountName) &&
             Objects.equals(this.typeId, accountRequest.typeId) &&
             Objects.equals(this.type, accountRequest.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, typeId, type);
+    return Objects.hash(accountName, typeId, type);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class AccountRequest {\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    accountName: ").append(toIndentedString(accountName)).append("\n");
     sb.append("    typeId: ").append(toIndentedString(typeId)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("}");

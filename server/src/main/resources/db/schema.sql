@@ -10,43 +10,34 @@ create table family_accounting.account_types
 create index idx_type_name
     on family_accounting.account_types (type_name);
 
-create table family_accounting.accounts
+CREATE TABLE family_accounting.accounts
 (
-    account_id int auto_increment comment '账号id'
-        primary key,
-    type_id    int          not null comment '账号类型id',
-    name       varchar(100) not null comment '账号名称',
-    constraint accounts_ibfk_1
-        foreign key (type_id) references family_accounting.account_types (type_id)
+    account_id    INT AUTO_INCREMENT COMMENT '账号id' PRIMARY KEY,
+    type_id       INT NOT NULL COMMENT '账号类型id',
+    account_name  VARCHAR(100) NOT NULL COMMENT '账号名称',
+    CONSTRAINT accounts_ibfk_1
+        FOREIGN KEY (type_id) REFERENCES family_accounting.account_types (type_id)
 );
 
-create index idx_name
-    on family_accounting.accounts (name);
+CREATE INDEX idx_account_name ON family_accounting.accounts (account_name);
+CREATE INDEX idx_type_id ON family_accounting.accounts (type_id);
 
-create index type_id
-    on family_accounting.accounts (type_id);
-
-create table family_accounting.sub_accounts
+CREATE TABLE family_accounting.sub_accounts
 (
-    sub_account_id int auto_increment comment '子账号id'
-        primary key,
-    account_id     int                                           not null comment '账号id',
-    name           varchar(100)                                  not null comment '账号名称',
-    account_number varchar(50)                                   not null comment '账号/卡号',
-    card_type      enum ('SAVINGS', 'DEBIT', 'CREDIT', 'WALLET') not null comment '账号/卡类型',
-    balance        decimal(15, 2) default 0.00                   not null comment '余额',
-    constraint account_number
-        unique (account_number),
-    constraint sub_accounts_ibfk_1
-        foreign key (account_id) references family_accounting.accounts (account_id)
-            on delete cascade
+    sub_account_id INT AUTO_INCREMENT COMMENT '子账号id' PRIMARY KEY,
+    account_id     INT NOT NULL COMMENT '账号id',
+    account_name   VARCHAR(100) NOT NULL COMMENT '账号名称',
+    account_number VARCHAR(50) NOT NULL COMMENT '账号/卡号',
+    card_type      ENUM ('SAVINGS', 'DEBIT', 'CREDIT', 'WALLET') NOT NULL COMMENT '账号/卡类型',
+    balance        DECIMAL(15, 2) DEFAULT 0.00 NOT NULL COMMENT '余额',
+    CONSTRAINT account_number UNIQUE (account_number),
+    CONSTRAINT sub_accounts_ibfk_1
+        FOREIGN KEY (account_id) REFERENCES family_accounting.accounts (account_id)
+            ON DELETE CASCADE
 );
 
-create index idx_account_id
-    on family_accounting.sub_accounts (account_id);
-
-create index idx_name
-    on family_accounting.sub_accounts (name);
+CREATE INDEX idx_account_id ON family_accounting.sub_accounts (account_id);
+CREATE INDEX idx_account_name ON family_accounting.sub_accounts (account_name);
 
 create table family_accounting.transaction_types
 (
@@ -61,16 +52,16 @@ create table family_accounting.transaction_types
 create index idx_type_name
     on family_accounting.transaction_types (type_name);
 
-create table family_accounting.users
+CREATE TABLE family_accounting.users
 (
-    user_id  int auto_increment comment '用户id'
-        primary key,
-    username varchar(50)          not null comment '用户名称',
-    password varchar(255)         not null comment '用户密码',
-    is_admin tinyint(1) default 0 not null comment '是否管理员',
-    constraint username
-        unique (username)
+    user_id  INT AUTO_INCREMENT COMMENT '用户id' PRIMARY KEY,
+    username VARCHAR(50) NOT NULL COMMENT '用户名称',
+    password VARCHAR(255) NOT NULL COMMENT '用户密码',
+    is_admin TINYINT(1) DEFAULT 0 NOT NULL COMMENT '是否管理员',
+    CONSTRAINT username UNIQUE (username)
 );
+
+CREATE INDEX idx_username ON family_accounting.users (username);
 
 create table family_accounting.transactions
 (

@@ -74,6 +74,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean hasTransactions(Integer userId) {
+        log.info("Checking if user with id {} has associated transactions", userId);
+        return transactionRepository.existsByUserUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean hasAssociatedData(Integer userId) {
         return !subAccountRepository.findSubAccountsByUserId(userId).isEmpty() ||
                 transactionRepository.existsByUserUserId(userId);

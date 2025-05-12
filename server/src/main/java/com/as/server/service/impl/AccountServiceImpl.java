@@ -21,7 +21,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public Account create(Account account) {
-        log.info("Creating account: {}", account.getName());
+        log.info("Creating account: {}", account.getAccountName());
         return accountRepository.save(account);
     }
 
@@ -43,7 +43,7 @@ public class AccountServiceImpl implements AccountService {
     public Account update(Integer id, Account account) {
         log.info("Updating account with id: {}", id);
         Account existing = findById(id);
-        existing.setName(account.getName());
+        existing.setAccountName(account.getAccountName());
         existing.setAccountType(account.getAccountType());
         return accountRepository.save(existing);
     }

@@ -31,36 +31,33 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDTO> create(@RequestBody UserRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
+        User user = entityMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setIsAdmin("ADMIN".equals(request.getRole()));
         User created = userService.create(user);
         return ResponseEntity.status(201).body(entityMapper.toUserDTO(created));
     }
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> list() {
-        List<UserDTO> users = userService.findAll().stream()
+        List<User> users = userService.findAll();
+        List<UserDTO> userDTOs = users.stream()
                 .map(entityMapper::toUserDTO)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userDTOs);
     }
 
     @PutMapping("/{userId}")
     public ResponseEntity<UserDTO> update(@PathVariable Integer userId, @RequestBody UserRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
+        User user = entityMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setIsAdmin("ADMIN".equals(request.getRole()));
         User updated = userService.update(userId, user);
         return ResponseEntity.ok(entityMapper.toUserDTO(updated));
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> delete(@PathVariable Integer userId) {
-        if (userService.hasAssociatedData(userId)) {
-            throw new ConflictException("User has associated transactions or sub-accounts");
+        if (userService.hasTransactions(userId)) {
+            throw new ConflictException("User has associated transactions");
         }
         userService.delete(userId);
         return ResponseEntity.noContent().build();

@@ -1,69 +1,39 @@
 package com.as.server.dto.statistics;
 
-import java.util.Objects;
-
+import com.as.server.enums.Period;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Setter;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
-import io.swagger.v3.oas.annotations.media.Schema;
-
-
-import javax.annotation.Generated;
+import java.util.Objects;
 
 /**
  * StatisticsResponse
  */
-
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-05-07T20:09:16.831236500+08:00[Asia/Shanghai]")
-public class StatisticsResponse   {
-
-  /**
-   * 统计周期（月度或年度）
-   */
-  public enum PeriodEnum {
-    MONTHLY("monthly"),
-    
-    ANNUAL("annual");
-
-    private String value;
-
-    PeriodEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static PeriodEnum fromValue(String value) {
-      for (PeriodEnum b : PeriodEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
+@Setter
+public class StatisticsResponse {
 
   @JsonProperty("period")
-  private PeriodEnum period;
+  private Period period;
 
   @JsonProperty("year")
   private Integer year;
 
   @JsonProperty("month")
   private Integer month;
+
+  @JsonProperty("week")
+  private Integer week;
+
+  @JsonProperty("day")
+  private Integer day;
 
   @JsonProperty("incomeByType")
   @Valid
@@ -79,45 +49,41 @@ public class StatisticsResponse   {
   @JsonProperty("totalExpense")
   private String totalExpense;
 
-  public StatisticsResponse period(PeriodEnum period) {
+  public StatisticsResponse period(Period period) {
     this.period = period;
     return this;
   }
 
   /**
-   * 统计周期（月度或年度）
+   * 统计周期：daily, weekly, monthly, yearly
    * @return period
-  */
-  @NotNull 
-  @Schema(name = "period", description = "统计周期（月度或年度）", required = true)
-  public PeriodEnum getPeriod() {
+   */
+  @NotNull
+  @Schema(name = "period", description = "统计周期：daily, weekly, monthly, yearly", required = true)
+  public Period getPeriod() {
     return period;
   }
 
-  public void setPeriod(PeriodEnum period) {
-    this.period = period;
-  }
-
-  public StatisticsResponse year(Integer year) {
+    public StatisticsResponse year(Integer year) {
     this.year = year;
     return this;
   }
 
   /**
    * 年份
+   * minimum: 2000
+   * maximum: 2100
    * @return year
-  */
-  @NotNull 
+   */
+  @NotNull
+  @Min(2000)
+  @Max(2100)
   @Schema(name = "year", description = "年份", required = true)
   public Integer getYear() {
     return year;
   }
 
-  public void setYear(Integer year) {
-    this.year = year;
-  }
-
-  public StatisticsResponse month(Integer month) {
+    public StatisticsResponse month(Integer month) {
     this.month = month;
     return this;
   }
@@ -127,18 +93,51 @@ public class StatisticsResponse   {
    * minimum: 1
    * maximum: 12
    * @return month
-  */
-  @Min(1) @Max(12) 
+   */
+  @Min(1)
+  @Max(12)
   @Schema(name = "month", description = "月份（月度统计时需要）", required = false)
   public Integer getMonth() {
     return month;
   }
 
-  public void setMonth(Integer month) {
-    this.month = month;
+    public StatisticsResponse week(Integer week) {
+    this.week = week;
+    return this;
   }
 
-  public StatisticsResponse incomeByType(List<StatisticsResponseIncomeByType> incomeByType) {
+  /**
+   * 周次（周度统计时需要）
+   * minimum: 1
+   * maximum: 53
+   * @return week
+   */
+  @Min(1)
+  @Max(53)
+  @Schema(name = "week", description = "周次（周度统计时需要）", required = false)
+  public Integer getWeek() {
+    return week;
+  }
+
+    public StatisticsResponse day(Integer day) {
+    this.day = day;
+    return this;
+  }
+
+  /**
+   * 日期（日度统计时需要）
+   * minimum: 1
+   * maximum: 31
+   * @return day
+   */
+  @Min(1)
+  @Max(31)
+  @Schema(name = "day", description = "日期（日度统计时需要）", required = false)
+  public Integer getDay() {
+    return day;
+  }
+
+    public StatisticsResponse incomeByType(List<StatisticsResponseIncomeByType> incomeByType) {
     this.incomeByType = incomeByType;
     return this;
   }
@@ -154,18 +153,14 @@ public class StatisticsResponse   {
   /**
    * 按类型统计的收入
    * @return incomeByType
-  */
-  @Valid 
+   */
+  @Valid
   @Schema(name = "incomeByType", description = "按类型统计的收入", required = false)
   public List<StatisticsResponseIncomeByType> getIncomeByType() {
     return incomeByType;
   }
 
-  public void setIncomeByType(List<StatisticsResponseIncomeByType> incomeByType) {
-    this.incomeByType = incomeByType;
-  }
-
-  public StatisticsResponse expenseByType(List<StatisticsResponseExpenseByType> expenseByType) {
+    public StatisticsResponse expenseByType(List<StatisticsResponseExpenseByType> expenseByType) {
     this.expenseByType = expenseByType;
     return this;
   }
@@ -181,18 +176,14 @@ public class StatisticsResponse   {
   /**
    * 按类型统计的支出
    * @return expenseByType
-  */
-  @Valid 
+   */
+  @Valid
   @Schema(name = "expenseByType", description = "按类型统计的支出", required = false)
   public List<StatisticsResponseExpenseByType> getExpenseByType() {
     return expenseByType;
   }
 
-  public void setExpenseByType(List<StatisticsResponseExpenseByType> expenseByType) {
-    this.expenseByType = expenseByType;
-  }
-
-  public StatisticsResponse totalIncome(String totalIncome) {
+    public StatisticsResponse totalIncome(String totalIncome) {
     this.totalIncome = totalIncome;
     return this;
   }
@@ -200,18 +191,15 @@ public class StatisticsResponse   {
   /**
    * 总收入（固定 2 位小数）
    * @return totalIncome
-  */
-  @NotNull @Pattern(regexp = "^\\d+(\\.\\d{2})?$") 
+   */
+  @NotNull
+  @Pattern(regexp = "^\\d+(\\.\\d{2})?$")
   @Schema(name = "totalIncome", description = "总收入（固定 2 位小数）", required = true)
   public String getTotalIncome() {
     return totalIncome;
   }
 
-  public void setTotalIncome(String totalIncome) {
-    this.totalIncome = totalIncome;
-  }
-
-  public StatisticsResponse totalExpense(String totalExpense) {
+    public StatisticsResponse totalExpense(String totalExpense) {
     this.totalExpense = totalExpense;
     return this;
   }
@@ -219,18 +207,15 @@ public class StatisticsResponse   {
   /**
    * 总支出（固定 2 位小数）
    * @return totalExpense
-  */
-  @NotNull @Pattern(regexp = "^\\d+(\\.\\d{2})?$") 
+   */
+  @NotNull
+  @Pattern(regexp = "^\\d+(\\.\\d{2})?$")
   @Schema(name = "totalExpense", description = "总支出（固定 2 位小数）", required = true)
   public String getTotalExpense() {
     return totalExpense;
   }
 
-  public void setTotalExpense(String totalExpense) {
-    this.totalExpense = totalExpense;
-  }
-
-  @Override
+    @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -240,17 +225,19 @@ public class StatisticsResponse   {
     }
     StatisticsResponse statisticsResponse = (StatisticsResponse) o;
     return Objects.equals(this.period, statisticsResponse.period) &&
-        Objects.equals(this.year, statisticsResponse.year) &&
-        Objects.equals(this.month, statisticsResponse.month) &&
-        Objects.equals(this.incomeByType, statisticsResponse.incomeByType) &&
-        Objects.equals(this.expenseByType, statisticsResponse.expenseByType) &&
-        Objects.equals(this.totalIncome, statisticsResponse.totalIncome) &&
-        Objects.equals(this.totalExpense, statisticsResponse.totalExpense);
+            Objects.equals(this.year, statisticsResponse.year) &&
+            Objects.equals(this.month, statisticsResponse.month) &&
+            Objects.equals(this.week, statisticsResponse.week) &&
+            Objects.equals(this.day, statisticsResponse.day) &&
+            Objects.equals(this.incomeByType, statisticsResponse.incomeByType) &&
+            Objects.equals(this.expenseByType, statisticsResponse.expenseByType) &&
+            Objects.equals(this.totalIncome, statisticsResponse.totalIncome) &&
+            Objects.equals(this.totalExpense, statisticsResponse.totalExpense);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(period, year, month, incomeByType, expenseByType, totalIncome, totalExpense);
+    return Objects.hash(period, year, month, week, day, incomeByType, expenseByType, totalIncome, totalExpense);
   }
 
   @Override
@@ -260,6 +247,8 @@ public class StatisticsResponse   {
     sb.append("    period: ").append(toIndentedString(period)).append("\n");
     sb.append("    year: ").append(toIndentedString(year)).append("\n");
     sb.append("    month: ").append(toIndentedString(month)).append("\n");
+    sb.append("    week: ").append(toIndentedString(week)).append("\n");
+    sb.append("    day: ").append(toIndentedString(day)).append("\n");
     sb.append("    incomeByType: ").append(toIndentedString(incomeByType)).append("\n");
     sb.append("    expenseByType: ").append(toIndentedString(expenseByType)).append("\n");
     sb.append("    totalIncome: ").append(toIndentedString(totalIncome)).append("\n");
@@ -279,4 +268,3 @@ public class StatisticsResponse   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-

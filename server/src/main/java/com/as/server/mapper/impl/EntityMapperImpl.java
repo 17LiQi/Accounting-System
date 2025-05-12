@@ -7,9 +7,15 @@ import com.as.server.dto.accounts.SubAccountRequest;
 import com.as.server.dto.transactions.TransactionDTO;
 import com.as.server.dto.transactions.TransactionRequest;
 import com.as.server.dto.transactions.TransactionTypeDTO;
+import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
-import com.as.server.entity.*;
+import com.as.server.entity.Account;
+import com.as.server.entity.AccountType;
+import com.as.server.entity.SubAccount;
+import com.as.server.entity.Transaction;
+import com.as.server.entity.TransactionType;
+import com.as.server.entity.User;
 import com.as.server.enums.CardType;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.repository.AccountTypeRepository;
@@ -18,9 +24,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Generated;
 
 @Generated(
-        value = "org.mapstruct.ap.MappingProcessor",
-        date = "2025-05-11T11:33:10+0800",
-        comments = "version: 1.5.5.Final, compiler: javac, environment: Java 1.8.0_421 (Oracle Corporation)"
+    value = "org.mapstruct.ap.MappingProcessor",
+    date = "2025-05-12T18:07:39+0800",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 1.8.0_421 (Oracle Corporation)"
 )
 @Component
 public class EntityMapperImpl implements EntityMapper {
@@ -66,7 +72,7 @@ public class EntityMapperImpl implements EntityMapper {
         AccountDTO accountDTO = new AccountDTO();
 
         accountDTO.setAccountId( account.getAccountId() );
-        accountDTO.setName( account.getName() );
+        accountDTO.setAccountName( account.getAccountName() );
         accountDTO.setTypeId( accountAccountTypeTypeId( account ) );
         accountDTO.setType( stringToTypeEnum( accountAccountTypeTypeName( account ) ) );
 
@@ -81,7 +87,7 @@ public class EntityMapperImpl implements EntityMapper {
 
         Account account = new Account();
 
-        account.setName( request.getName() );
+        account.setAccountName( request.getaccountName() );
         account.setAccountType( accountType( request.getTypeId(), accountTypeRepository ) );
 
         return account;
@@ -97,7 +103,7 @@ public class EntityMapperImpl implements EntityMapper {
 
         subAccountDTO.setSubAccountId( subAccount.getSubAccountId() );
         subAccountDTO.setAccountId( subAccountAccountAccountId( subAccount ) );
-        subAccountDTO.setName( subAccount.getName() );
+        subAccountDTO.setaccountName( subAccount.getAccountName() );
         subAccountDTO.setAccountNumber( subAccount.getAccountNumber() );
         subAccountDTO.setCardType( cardTypeToCardTypeEnum( subAccount.getCardType() ) );
         subAccountDTO.setBalance( bigDecimalToString( subAccount.getBalance() ) );
@@ -114,7 +120,7 @@ public class EntityMapperImpl implements EntityMapper {
         SubAccount subAccount = new SubAccount();
 
         subAccount.setAccount( toAccount( request.getAccountId() ) );
-        subAccount.setName( request.getName() );
+        subAccount.setAccountName( request.getaccountName() );
         subAccount.setAccountNumber( request.getAccountNumber() );
         subAccount.setCardType( cardTypeEnumToCardType( request.getCardType() ) );
         subAccount.setBalance( stringToBigDecimal( request.getBalance() ) );
@@ -168,22 +174,21 @@ public class EntityMapperImpl implements EntityMapper {
         TransactionTypeDTO transactionTypeDTO = new TransactionTypeDTO();
 
         transactionTypeDTO.setTypeId( type.getTypeId() );
-        transactionTypeDTO.settypeName( type.getTypeName() );
+        transactionTypeDTO.setTypeName( type.getTypeName() );
         transactionTypeDTO.setIsIncome( type.getIsIncome() );
 
         return transactionTypeDTO;
     }
 
     @Override
-    public TransactionType toTransactionType(TransactionTypeDTO request) {
+    public TransactionType toTransactionType(TransactionTypeRequest request) {
         if ( request == null ) {
             return null;
         }
 
         TransactionType transactionType = new TransactionType();
 
-        transactionType.setTypeId( request.getTypeId() );
-        transactionType.setTypeName( request.gettypeName() );
+        transactionType.setTypeName( request.getTypeName() );
         transactionType.setIsIncome( request.getIsIncome() );
 
         return transactionType;
@@ -243,13 +248,13 @@ public class EntityMapperImpl implements EntityMapper {
 
         switch ( cardType ) {
             case SAVINGS: cardTypeEnum = SubAccountDTO.CardTypeEnum.SAVINGS;
-                break;
+            break;
             case DEBIT: cardTypeEnum = SubAccountDTO.CardTypeEnum.DEBIT;
-                break;
+            break;
             case CREDIT: cardTypeEnum = SubAccountDTO.CardTypeEnum.CREDIT;
-                break;
+            break;
             case WALLET: cardTypeEnum = SubAccountDTO.CardTypeEnum.WALLET;
-                break;
+            break;
             default: throw new IllegalArgumentException( "Unexpected enum constant: " + cardType );
         }
 
@@ -265,13 +270,13 @@ public class EntityMapperImpl implements EntityMapper {
 
         switch ( cardTypeEnum ) {
             case SAVINGS: cardType = CardType.SAVINGS;
-                break;
+            break;
             case DEBIT: cardType = CardType.DEBIT;
-                break;
+            break;
             case CREDIT: cardType = CardType.CREDIT;
-                break;
+            break;
             case WALLET: cardType = CardType.WALLET;
-                break;
+            break;
             default: throw new IllegalArgumentException( "Unexpected enum constant: " + cardTypeEnum );
         }
 

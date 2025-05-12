@@ -51,7 +51,7 @@ public class AccountControllerTest {
     @WithMockUser(roles = "ADMIN")
     void createAccount_success() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setName("Test Account");
+        request.setaccountName("Test Account");
         request.setTypeId(1);
         request.setType(AccountRequest.TypeEnum.BANK);
 
@@ -61,12 +61,12 @@ public class AccountControllerTest {
 
         Account account = new Account();
         account.setAccountId(1);
-        account.setName("Test Account");
+        account.setAccountName("Test Account");
         account.setAccountType(accountType);
 
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setAccountId(1);
-        accountDTO.setName("Test Account");
+        accountDTO.setAccountName("Test Account");
         accountDTO.setTypeId(1);
         accountDTO.setType(AccountDTO.TypeEnum.BANK);
 
@@ -81,7 +81,7 @@ public class AccountControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.accountId").value(1))
-                .andExpect(jsonPath("$.name").value("Test Account"))
+                .andExpect(jsonPath("$.accountName").value("Test Account"))
                 .andExpect(jsonPath("$.typeId").value(1))
                 .andExpect(jsonPath("$.type").value("BANK"));
     }
@@ -90,7 +90,7 @@ public class AccountControllerTest {
     @WithMockUser(roles = "ADMIN")
     void createAccount_invalidTypeId_throwsBadRequest() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setName("Test Account");
+        request.setaccountName("Test Account");
         request.setTypeId(999);
         // 故意不设置 type，触发 @NotNull 验证错误
 
@@ -108,7 +108,7 @@ public class AccountControllerTest {
     void listAccounts_success() throws Exception {
         Account account = new Account();
         account.setAccountId(1);
-        account.setName("Test Account");
+        account.setAccountName("Test Account");
         AccountType accountType = new AccountType();
         accountType.setTypeId(1);
         accountType.setTypeName("BANK");
@@ -116,7 +116,7 @@ public class AccountControllerTest {
 
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setAccountId(1);
-        accountDTO.setName("Test Account");
+        accountDTO.setAccountName("Test Account");
         accountDTO.setTypeId(1);
         accountDTO.setType(AccountDTO.TypeEnum.BANK);
 
@@ -128,7 +128,7 @@ public class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].accountId").value(1))
-                .andExpect(jsonPath("$[0].name").value("Test Account"))
+                .andExpect(jsonPath("$[0].accountName").value("Test Account"))
                 .andExpect(jsonPath("$[0].typeId").value(1))
                 .andExpect(jsonPath("$[0].type").value("BANK"));
     }
@@ -137,7 +137,7 @@ public class AccountControllerTest {
     @WithMockUser(roles = "ADMIN")
     void updateAccount_success() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setName("Updated Account");
+        request.setaccountName("Updated Account");
         request.setTypeId(1);
         request.setType(AccountRequest.TypeEnum.BANK);
 
@@ -147,12 +147,12 @@ public class AccountControllerTest {
 
         Account account = new Account();
         account.setAccountId(1);
-        account.setName("Updated Account");
+        account.setAccountName("Updated Account");
         account.setAccountType(accountType);
 
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setAccountId(1);
-        accountDTO.setName("Updated Account");
+        accountDTO.setAccountName("Updated Account");
         accountDTO.setTypeId(1);
         accountDTO.setType(AccountDTO.TypeEnum.BANK);
 
@@ -167,7 +167,7 @@ public class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.accountId").value(1))
-                .andExpect(jsonPath("$.name").value("Updated Account"))
+                .andExpect(jsonPath("$.accountName").value("Updated Account"))
                 .andExpect(jsonPath("$.typeId").value(1))
                 .andExpect(jsonPath("$.type").value("BANK"));
     }
@@ -197,7 +197,7 @@ public class AccountControllerTest {
     @Test
     void createAccount_accessDenied_throwsForbidden() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setName("Test Account");
+        request.setaccountName("Test Account");
         request.setTypeId(1);
         request.setType(AccountRequest.TypeEnum.BANK);
 

@@ -7,6 +7,7 @@ import com.as.server.dto.accounts.SubAccountRequest;
 import com.as.server.dto.transactions.TransactionDTO;
 import com.as.server.dto.transactions.TransactionRequest;
 import com.as.server.dto.transactions.TransactionTypeDTO;
+import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
 import com.as.server.entity.*;
@@ -20,6 +21,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+
 
 public interface EntityMapper {
 
@@ -36,20 +38,20 @@ public interface EntityMapper {
     User toUser(UserRequest request);
 
     @Mapping(target = "accountId", source = "accountId")
-    @Mapping(target = "name", source = "name")
+    @Mapping(target = "accountName", source = "accountName")
     @Mapping(target = "typeId", source = "accountType.typeId")
     @Mapping(target = "type", source = "accountType.typeName", qualifiedByName = "stringToTypeEnum")
     AccountDTO toAccountDTO(Account account);
 
     @Mapping(target = "accountId", ignore = true)
-    @Mapping(target = "name", source = "name")
+    @Mapping(target = "accountName", source = "accountName")
     @Mapping(source = "typeId", target = "accountType", qualifiedByName = "accountType")
     @Mapping(target = "subAccounts", ignore = true)
     Account toAccount(AccountRequest request, @Context AccountTypeRepository accountTypeRepository);
 
     @Mapping(target = "subAccountId", source = "subAccountId")
     @Mapping(target = "accountId", source = "account.accountId")
-    @Mapping(target = "name", source = "name")
+    @Mapping(target = "accountName", source = "accountName")
     @Mapping(target = "accountNumber", source = "accountNumber")
     @Mapping(target = "cardType", source = "cardType")
     @Mapping(target = "balance", source = "balance", qualifiedByName = "bigDecimalToString")
@@ -57,7 +59,7 @@ public interface EntityMapper {
 
     @Mapping(target = "subAccountId", ignore = true)
     @Mapping(target = "account", source = "accountId", qualifiedByName = "toAccount")
-    @Mapping(target = "name", source = "name")
+    @Mapping(target = "accountName", source = "accountName")
     @Mapping(target = "accountNumber", source = "accountNumber")
     @Mapping(target = "cardType", source = "cardType")
     @Mapping(target = "balance", source = "balance", qualifiedByName = "stringToBigDecimal")
@@ -88,12 +90,13 @@ public interface EntityMapper {
     @Mapping(target = "isIncome", source = "isIncome")
     TransactionTypeDTO toTransactionTypeDTO(TransactionType type);
 
-    @Mapping(target = "typeId", source = "typeId")
+    @Mapping(target = "typeId", ignore = true)
     @Mapping(target = "typeName", source = "typeName")
     @Mapping(target = "isIncome", source = "isIncome")
     @Mapping(target = "transactions", ignore = true)
-    TransactionType toTransactionType(TransactionTypeDTO request);
+    TransactionType toTransactionType(TransactionTypeRequest request);
 
+    // 工具方法
     @Named("bigDecimalToString")
     default String bigDecimalToString(BigDecimal value) {
         return value != null ? value.setScale(2, RoundingMode.HALF_UP).toString() : null;

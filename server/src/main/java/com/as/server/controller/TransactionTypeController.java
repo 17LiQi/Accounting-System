@@ -1,6 +1,7 @@
 package com.as.server.controller;
 
 import com.as.server.dto.transactions.TransactionTypeDTO;
+import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.entity.TransactionType;
 import com.as.server.exception.ConflictException;
 import com.as.server.mapper.EntityMapper;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,28 +27,33 @@ public class TransactionTypeController {
     private EntityMapper entityMapper;
 
     @PostMapping
-    public ResponseEntity<TransactionTypeDTO> create(@RequestBody TransactionTypeDTO request) {
-        TransactionType type = entityMapper.toTransactionType(request);
-        TransactionType created = transactionTypeService.create(type);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TransactionTypeDTO> create(@Valid @RequestBody TransactionTypeRequest request) {
+        TransactionType transactionType = entityMapper.toTransactionType(request);
+        TransactionType created = transactionTypeService.create(transactionType);
         return ResponseEntity.status(201).body(entityMapper.toTransactionTypeDTO(created));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<TransactionTypeDTO>> list() {
-        List<TransactionTypeDTO> types = transactionTypeService.findAll().stream()
+        List<TransactionType> types = transactionTypeService.findAll();
+        List<TransactionTypeDTO> typeDTOs = types.stream()
                 .map(entityMapper::toTransactionTypeDTO)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(types);
+        return ResponseEntity.ok(typeDTOs);
     }
 
     @PutMapping("/{typeId}")
-    public ResponseEntity<TransactionTypeDTO> update(@PathVariable Integer typeId, @RequestBody TransactionTypeDTO request) {
-        TransactionType type = entityMapper.toTransactionType(request);
-        TransactionType updated = transactionTypeService.update(typeId, type);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TransactionTypeDTO> update(@PathVariable Integer typeId, @Valid @RequestBody TransactionTypeRequest request) {
+        TransactionType transactionType = entityMapper.toTransactionType(request);
+        TransactionType updated = transactionTypeService.update(typeId, transactionType);
         return ResponseEntity.ok(entityMapper.toTransactionTypeDTO(updated));
     }
 
     @DeleteMapping("/{typeId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer typeId) {
         if (transactionTypeService.hasTransactions(typeId)) {
             throw new ConflictException("Transaction type has associated transactions");

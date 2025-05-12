@@ -3,71 +3,61 @@ package com.as.server.service.impl;
 import com.as.server.dto.statistics.StatisticsResponse;
 import com.as.server.dto.statistics.StatisticsResponseExpenseByType;
 import com.as.server.dto.statistics.StatisticsResponseIncomeByType;
+import com.as.server.enums.Period;
 import com.as.server.repository.TransactionRepository;
 import com.as.server.service.StatisticsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
+import java.math.RoundingMode;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StatisticsServiceImpl implements StatisticsService {
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepository;
+
+    public StatisticsServiceImpl(TransactionRepository transactionRepository) {
+        this.transactionRepository = transactionRepository;
+    }
 
     @Override
-    public StatisticsResponse getStatistics(Integer userId, Integer accountId, Integer subAccountId, String period, Integer year, Integer month) {
-        LocalDateTime start, end;
-        if ("monthly".equals(period)) {
-            if (month == null) {
-                throw new IllegalArgumentException("Month is required for monthly statistics");
-            }
-            YearMonth yearMonth = YearMonth.of(year, month);
-            start = yearMonth.atDay(1).atStartOfDay();
-            end = yearMonth.atEndOfMonth().atTime(23, 59, 59);
-        } else if ("annual".equals(period)) {
-            start = LocalDateTime.of(year, 1, 1, 0, 0);
-            end = LocalDateTime.of(year, 12, 31, 23, 59, 59);
-        } else {
-            throw new IllegalArgumentException("Invalid period: " + period);
+    public StatisticsResponse getStatistics(Integer userId, Integer accountId, Integer subAccountId, Period period, Integer year, Integer month, Integer week, Integer day) {
+        // 参数验证
+        if (period == null || year == null) {
+            throw new IllegalArgumentException("Period and year are required");
+        }
+        if (period == Period.MONTHLY && month == null) {
+            throw new IllegalArgumentException("Month is required for monthly period");
+        }
+        if (period == Period.WEEKLY && week == null) {
+            throw new IllegalArgumentException("Week is required for weekly period");
+        }
+        if (period == Period.DAILY && (month == null || day == null)) {
+            throw new IllegalArgumentException("Month and day are required for daily period");
         }
 
-        List<Object[]> incomeByType = transactionRepository.findIncomeByType(userId, accountId, subAccountId, start, end);
-        List<Object[]> expenseByType = transactionRepository.findExpenseByType(userId, accountId, subAccountId, start, end);
-
         StatisticsResponse response = new StatisticsResponse();
-        response.setPeriod(StatisticsResponse.PeriodEnum.valueOf(period));
+        response.setPeriod(period);
         response.setYear(year);
         response.setMonth(month);
-        response.setIncomeByType(incomeByType.stream().map(row -> {
-            StatisticsResponseIncomeByType item = new StatisticsResponseIncomeByType();
-            item.setTypeId((Integer) row[0]);
-            item.setTypeName((String) row[1]);
-            item.setAmount(((BigDecimal) row[2]).toString());
-            return item;
-        }).collect(Collectors.toList()));
-        response.setExpenseByType(expenseByType.stream().map(row -> {
-            StatisticsResponseExpenseByType item = new StatisticsResponseExpenseByType();
-            item.setTypeId((Integer) row[0]);
-            item.setTypeName((String) row[1]);
-            item.setAmount(((BigDecimal) row[2]).toString());
-            return item;
-        }).collect(Collectors.toList()));
-        response.setTotalIncome(response.getIncomeByType().stream()
-                .map(item -> new BigDecimal(item.getAmount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, BigDecimal.ROUND_HALF_UP)
-                .toString());
-        response.setTotalExpense(response.getExpenseByType().stream()
-                .map(item -> new BigDecimal(item.getAmount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, BigDecimal.ROUND_HALF_UP)
-                .toString());
+        response.setWeek(week);
+        response.setDay(day);
+
+        // 总收入和支出
+        BigDecimal totalIncome = transactionRepository.sumByTypeAndPeriod(true, userId, accountId, subAccountId, String.valueOf(period), year, month, week, day);
+        BigDecimal totalExpense = transactionRepository.sumByTypeAndPeriod(false, userId, accountId, subAccountId, String.valueOf(period), year, month, week, day);
+
+        response.setTotalIncome(totalIncome != null ? totalIncome.setScale(2, RoundingMode.HALF_UP).toString() : "0.00");
+        response.setTotalExpense(totalExpense != null ? totalExpense.setScale(2, RoundingMode.HALF_UP).toString() : "0.00");
+
+        // 按类型统计（示例，需根据实际类型实现）
+        List<StatisticsResponseIncomeByType> incomeByType = transactionRepository.sumIncomeByType(userId, accountId, subAccountId, String.valueOf(period), year, month, week, day);
+        List<StatisticsResponseExpenseByType> expenseByType = transactionRepository.sumExpenseByType(userId, accountId, subAccountId, String.valueOf(period), year, month, week, day);
+
+        response.setIncomeByType(incomeByType);
+        response.setExpenseByType(expenseByType);
+
         return response;
     }
 }

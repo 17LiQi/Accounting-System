@@ -1,9 +1,10 @@
 package com.as.server.service.impl;
 
 import com.as.server.entity.TransactionType;
+import com.as.server.exception.EntityNotFoundException;
+import com.as.server.repository.TransactionRepository;
 import com.as.server.repository.TransactionTypeRepository;
 import com.as.server.service.TransactionTypeService;
-import com.as.server.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import java.util.List;
 public class TransactionTypeServiceImpl implements TransactionTypeService {
 
     private final TransactionTypeRepository transactionTypeRepository;
+
+    private final TransactionRepository transactionRepository;
 
     @Override
     @Transactional
@@ -59,7 +62,9 @@ public class TransactionTypeServiceImpl implements TransactionTypeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean hasTransactions(Integer typeId) {
-        return false;
+        log.info("Checking if transaction type with id {} has associated transactions", typeId);
+        return transactionRepository.existsByTransactionTypeTypeId(typeId);
     }
 }

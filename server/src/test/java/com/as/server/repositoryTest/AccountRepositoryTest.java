@@ -43,13 +43,13 @@ class AccountRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
 
         Account saved = accountRepository.save(account);
 
         assertThat(saved.getAccountId()).isNotNull();
-        assertThat(saved.getName()).isEqualTo("Personal Account");
+        assertThat(saved.getAccountName()).isEqualTo("Personal Account");
     }
 
     @Test
@@ -57,7 +57,7 @@ class AccountRepositoryTest {
     @Rollback
     void shouldEnforceForeignKeyConstraint() {
         SubAccount subAccount = new SubAccount();
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setBalance(BigDecimal.ZERO);
         subAccount.setCardType(CardType.SAVINGS);
         // 未设置 account，违反外键约束
@@ -73,12 +73,12 @@ class AccountRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
         entityManager.persist(account);
 
         SubAccount subAccount = new SubAccount();
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setAccount(account);
         subAccount.setAccountNumber("1234-5678-9012-3456");
         subAccount.setBalance(BigDecimal.ZERO);
@@ -87,7 +87,7 @@ class AccountRepositoryTest {
         SubAccount saved = subAccountRepository.save(subAccount);
 
         assertThat(saved.getSubAccountId()).isNotNull();
-        assertThat(saved.getAccount().getName()).isEqualTo("Personal Account");
+        assertThat(saved.getAccount().getAccountName()).isEqualTo("Personal Account");
     }
 
     @Test
@@ -99,12 +99,12 @@ class AccountRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
         entityManager.persist(account);
 
         SubAccount subAccount1 = new SubAccount();
-        subAccount1.setName("Card 1");
+        subAccount1.setAccountName("Card 1");
         subAccount1.setAccount(account);
         subAccount1.setAccountNumber("1234-5678-9012-3456");
         subAccount1.setBalance(BigDecimal.ZERO);
@@ -112,7 +112,7 @@ class AccountRepositoryTest {
         entityManager.persist(subAccount1);
 
         SubAccount subAccount2 = new SubAccount();
-        subAccount2.setName("Card 2");
+        subAccount2.setAccountName("Card 2");
         subAccount2.setAccount(account);
         subAccount2.setAccountNumber("9876-5432-1098-7654");
         subAccount2.setBalance(BigDecimal.ZERO);
@@ -127,6 +127,6 @@ class AccountRepositoryTest {
         List<SubAccount> subAccounts = fetched.getSubAccounts();
 
         assertThat(subAccounts).hasSize(2);
-        assertThat(subAccounts).extracting(SubAccount::getName).containsExactlyInAnyOrder("Card 1", "Card 2");
+        assertThat(subAccounts).extracting(SubAccount::getAccountName).containsExactlyInAnyOrder("Card 1", "Card 2");
     }
 }

@@ -54,11 +54,11 @@ public class TransactionTypeDTO {
   */
   @NotNull @Size(max = 50) 
   @Schema(name = "typeName", required = true)
-  public String gettypeName() {
+  public String getTypeName() {
     return typeName;
   }
 
-  public void settypeName(String typeName) {
+  public void setTypeName(String typeName) {
     this.typeName = typeName;
   }
 

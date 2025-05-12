@@ -24,8 +24,8 @@ public class SubAccountDTO {
   @JsonProperty("accountId")
   private Integer accountId;
 
-  @JsonProperty("name")
-  private String name;
+  @JsonProperty("accountName")
+  private String accountName;
 
   @JsonProperty("accountNumber")
   private String accountNumber;
@@ -113,23 +113,23 @@ public class SubAccountDTO {
     this.accountId = accountId;
   }
 
-  public SubAccountDTO name(String name) {
-    this.name = name;
+  public SubAccountDTO accountName(String accountName) {
+    this.accountName = accountName;
     return this;
   }
 
   /**
-   * Get name
-   * @return name
+   * Get accountName
+   * @return accountName
   */
   @NotNull @Size(max = 100) 
-  @Schema(name = "name", required = true)
-  public String getName() {
-    return name;
+  @Schema(name = "accountName", required = true)
+  public String getaccountName() {
+    return accountName;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setaccountName(String accountName) {
+    this.accountName = accountName;
   }
 
   public SubAccountDTO accountNumber(String accountNumber) {
@@ -200,7 +200,7 @@ public class SubAccountDTO {
     SubAccountDTO subAccount = (SubAccountDTO) o;
     return Objects.equals(this.subAccountId, subAccount.subAccountId) &&
         Objects.equals(this.accountId, subAccount.accountId) &&
-        Objects.equals(this.name, subAccount.name) &&
+        Objects.equals(this.accountName, subAccount.accountName) &&
         Objects.equals(this.accountNumber, subAccount.accountNumber) &&
         Objects.equals(this.cardType, subAccount.cardType) &&
         Objects.equals(this.balance, subAccount.balance);
@@ -208,7 +208,7 @@ public class SubAccountDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(subAccountId, accountId, name, accountNumber, cardType, balance);
+    return Objects.hash(subAccountId, accountId, accountName, accountNumber, cardType, balance);
   }
 
   @Override
@@ -217,7 +217,7 @@ public class SubAccountDTO {
     sb.append("class SubAccount {\n");
     sb.append("    subAccountId: ").append(toIndentedString(subAccountId)).append("\n");
     sb.append("    accountId: ").append(toIndentedString(accountId)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    accountName: ").append(toIndentedString(accountName)).append("\n");
     sb.append("    accountNumber: ").append(toIndentedString(accountNumber)).append("\n");
     sb.append("    cardType: ").append(toIndentedString(cardType)).append("\n");
     sb.append("    balance: ").append(toIndentedString(balance)).append("\n");

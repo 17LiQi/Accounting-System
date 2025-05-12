@@ -98,12 +98,12 @@ public class UserRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
         entityManager.persist(account);
 
         SubAccount subAccount = new SubAccount();
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setAccount(account);
         subAccount.setAccountNumber("1234-5678-9012-3456");
         subAccount.setBalance(BigDecimal.ZERO);

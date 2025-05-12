@@ -49,7 +49,7 @@ class AccountTypeRepositoryTest {
     @Rollback
     void shouldEnforceForeignKeyConstraint() {
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         // 未设置 accountType，违反外键约束
         assertThrows(Exception.class, () -> accountRepository.saveAndFlush(account));
     }
@@ -63,7 +63,7 @@ class AccountTypeRepositoryTest {
         entityManager.persist(accountType);
 
         Account account = new Account();
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
         account.setAccountType(accountType);
 
         Account saved = accountRepository.save(account);
@@ -81,12 +81,12 @@ class AccountTypeRepositoryTest {
         entityManager.persist(accountType);
 
         Account account1 = new Account();
-        account1.setName("Account 1");
+        account1.setAccountName("Account 1");
         account1.setAccountType(accountType);
         entityManager.persist(account1);
 
         Account account2 = new Account();
-        account2.setName("Account 2");
+        account2.setAccountName("Account 2");
         account2.setAccountType(accountType);
         entityManager.persist(account2);
 
@@ -98,6 +98,6 @@ class AccountTypeRepositoryTest {
         List<Account> accounts = fetched.getAccounts();
 
         assertThat(accounts).hasSize(2);
-        assertThat(accounts).extracting(Account::getName).containsExactlyInAnyOrder("Account 1", "Account 2");
+        assertThat(accounts).extracting(Account::getAccountName).containsExactlyInAnyOrder("Account 1", "Account 2");
     }
 }

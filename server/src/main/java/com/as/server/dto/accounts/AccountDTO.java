@@ -20,8 +20,8 @@ public class AccountDTO {
   @JsonProperty("accountId")
   private Integer accountId;
 
-  @JsonProperty("name")
-  private String name;
+  @JsonProperty("accountName")
+  private String accountName;
 
   @JsonProperty("typeId")
   private Integer typeId;
@@ -84,24 +84,24 @@ public class AccountDTO {
     this.accountId = accountId;
   }
 
-  public AccountDTO name(String name) {
-    this.name = name;
+  public AccountDTO accountName(String accountName) {
+    this.accountName = accountName;
     return this;
   }
 
   /**
    * 账户名称（如“我的银行账户”）
-   * @return name
+   * @return accountName
    */
   @NotNull
   @Size(max = 100)
-  @Schema(name = "name", description = "账户名称（如“我的银行账户”）", required = true)
-  public String getName() {
-    return name;
+  @Schema(name = "accountName", description = "账户名称（如“我的银行账户”）", required = true)
+  public String getAccountName() {
+    return accountName;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setAccountName(String accountName) {
+    this.accountName = accountName;
   }
 
   public AccountDTO typeId(Integer typeId) {
@@ -152,14 +152,14 @@ public class AccountDTO {
     }
     AccountDTO account = (AccountDTO) o;
     return Objects.equals(this.accountId, account.accountId) &&
-            Objects.equals(this.name, account.name) &&
+            Objects.equals(this.accountName, account.accountName) &&
             Objects.equals(this.typeId, account.typeId) &&
             Objects.equals(this.type, account.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(accountId, name, typeId, type);
+    return Objects.hash(accountId, accountName, typeId, type);
   }
 
   @Override
@@ -167,7 +167,7 @@ public class AccountDTO {
     StringBuilder sb = new StringBuilder();
     sb.append("class AccountDTO {\n");
     sb.append("    accountId: ").append(toIndentedString(accountId)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    accountName: ").append(toIndentedString(accountName)).append("\n");
     sb.append("    typeId: ").append(toIndentedString(typeId)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("}");

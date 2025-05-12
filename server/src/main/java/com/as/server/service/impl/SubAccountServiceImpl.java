@@ -24,14 +24,14 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Override
     @Transactional
     public SubAccount create(SubAccount subAccount) {
-        log.info("Creating sub-account: {}", subAccount.getName());
+        log.info("Creating sub-account: {}", subAccount.getAccountName());
         if (subAccount.getAccountNumber() == null || subAccount.getAccountNumber().trim().isEmpty()) {
             throw new IllegalArgumentException("Account number is required");
         }
         if (subAccountRepository.existsByAccountNumber(subAccount.getAccountNumber())) {
             throw new IllegalArgumentException("Account number already exists");
         }
-        log.info("Creating sub-account: {}", subAccount.getName());
+        log.info("Creating sub-account: {}", subAccount.getAccountName());
         return subAccountRepository.save(subAccount);
     }
 
@@ -60,7 +60,7 @@ public class SubAccountServiceImpl implements SubAccountService {
                 subAccountRepository.existsByAccountNumber(subAccount.getAccountNumber())) {
             throw new IllegalArgumentException("Account number already exists");
         }
-        existing.setName(subAccount.getName());
+        existing.setAccountName(subAccount.getAccountName());
         existing.setAccount(subAccount.getAccount());
         existing.setAccountNumber(subAccount.getAccountNumber());
         existing.setCardType(subAccount.getCardType());

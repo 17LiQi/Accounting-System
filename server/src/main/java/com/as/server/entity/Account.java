@@ -22,8 +22,8 @@ public class Account {
     @JoinColumn(name = "type_id", nullable = false)
     private AccountType accountType;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "account_name", nullable = false)
+    private String accountName;
 
     @OneToMany(mappedBy = "account")
     private List<SubAccount> subAccounts = new ArrayList<>();

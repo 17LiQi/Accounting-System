@@ -52,3 +52,37 @@
 # 全局响应与Jwt权限管理异常
 - 如果遇到权限问题,异常会直接在Jwt过滤器链中抛出而不是是进入全局响应
 - 为 AccessDeniedException 设置全局处理器并添加到SecurityConfig中
+
+# 枚举类的序列化和反序列化
+- Hibernate 无法直接处理枚举类型, 在service中需要使用string类型并用String.valueOf()封装字段
+- 新增JacksonConfig配置类
+- 添加枚举类中的序列化方法
+```java
+private final String value;
+
+    Period(String value) {
+        this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
+
+    @JsonCreator
+    public static Period fromValue(String value) {
+        log.debug("Deserializing Period from value: {}", value);
+        if (value == null) {
+            log.error("Period value is null");
+            throw new IllegalArgumentException("Period cannot be null");
+        }
+        try {
+            return valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid period value: {}", value, e);
+            throw new IllegalArgumentException("Invalid period value: " + value, e);
+        }
+    }
+```
+- 考虑为其他枚举类规范化
+- 考虑提取[AccountDTO.java](src/main/java/com/as/server/dto/accounts/AccountDTO.java)中的枚举

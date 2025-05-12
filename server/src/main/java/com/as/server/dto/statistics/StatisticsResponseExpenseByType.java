@@ -1,13 +1,15 @@
 package com.as.server.dto.statistics;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.validation.constraints.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-
 import javax.annotation.Generated;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * StatisticsResponseExpenseByType
@@ -30,6 +32,14 @@ public class StatisticsResponseExpenseByType   {
     return this;
   }
 
+  public StatisticsResponseExpenseByType() {
+  }
+
+  public StatisticsResponseExpenseByType(Integer typeId, String typeName, BigDecimal amount) {
+    this.typeId = typeId;
+    this.typeName = typeName;
+    this.amount = amount != null ? amount.setScale(2, RoundingMode.HALF_UP).toString() : "0.00";
+  }
   /**
    * 交易类型 ID
    * @return typeId

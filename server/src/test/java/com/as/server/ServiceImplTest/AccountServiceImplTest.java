@@ -34,7 +34,7 @@ class AccountServiceImplTest {
     void setUp() {
         account = new Account();
         account.setAccountId(1);
-        account.setName("Personal Account");
+        account.setAccountName("Personal Account");
     }
 
     /**
@@ -47,7 +47,7 @@ class AccountServiceImplTest {
         Account result = accountService.create(account);
 
         assertNotNull(result);
-        assertEquals("Personal Account", result.getName());
+        assertEquals("Personal Account", result.getAccountName());
         verify(accountRepository).save(account);
     }
 
@@ -61,7 +61,7 @@ class AccountServiceImplTest {
         Account result = accountService.findById(1);
 
         assertNotNull(result);
-        assertEquals("Personal Account", result.getName());
+        assertEquals("Personal Account", result.getAccountName());
         verify(accountRepository).findById(1);
     }
 
@@ -87,7 +87,7 @@ class AccountServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Personal Account", result.get(0).getName());
+        assertEquals("Personal Account", result.get(0).getAccountName());
         verify(accountRepository).findAll();
     }
 
@@ -97,7 +97,7 @@ class AccountServiceImplTest {
     @Test
     void updateAccount() {
         Account updated = new Account();
-        updated.setName("Updated Account");
+        updated.setAccountName("Updated Account");
 
         when(accountRepository.findById(1)).thenReturn(Optional.of(account));
         when(accountRepository.save(any(Account.class))).thenReturn(account);
@@ -105,7 +105,7 @@ class AccountServiceImplTest {
         Account result = accountService.update(1, updated);
 
         assertNotNull(result);
-        assertEquals("Updated Account", result.getName());
+        assertEquals("Updated Account", result.getAccountName());
         verify(accountRepository).findById(1);
         verify(accountRepository).save(account);
     }

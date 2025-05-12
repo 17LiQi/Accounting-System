@@ -14,4 +14,6 @@ public interface UserService {
     boolean hasAssociatedData(Integer userId);
 
     User findByUsername(String username);
+
+    boolean hasTransactions(Integer userId);
 }

@@ -36,7 +36,7 @@ class SubAccountServiceImplTest {
     void setUp() {
         subAccount = new SubAccount();
         subAccount.setSubAccountId(1);
-        subAccount.setName("Savings Card");
+        subAccount.setAccountName("Savings Card");
         subAccount.setAccountNumber("1234-5678-9012-3456");
         subAccount.setBalance(BigDecimal.ZERO);
         subAccount.setCardType(CardType.SAVINGS);
@@ -52,7 +52,7 @@ class SubAccountServiceImplTest {
         SubAccount result = subAccountService.create(subAccount);
 
         assertNotNull(result);
-        assertEquals("Savings Card", result.getName());
+        assertEquals("Savings Card", result.getAccountName());
         verify(subAccountRepository).save(subAccount);
     }
 
@@ -66,7 +66,7 @@ class SubAccountServiceImplTest {
         SubAccount result = subAccountService.findById(1);
 
         assertNotNull(result);
-        assertEquals("Savings Card", result.getName());
+        assertEquals("Savings Card", result.getAccountName());
         verify(subAccountRepository).findById(1);
     }
 
@@ -95,7 +95,7 @@ class SubAccountServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Savings Card", result.get(0).getName());
+        assertEquals("Savings Card", result.get(0).getAccountName());
         verify(subAccountRepository).findAll();
     }
 
@@ -105,7 +105,7 @@ class SubAccountServiceImplTest {
     @Test
     void updateSubAccount() {
         SubAccount updated = new SubAccount();
-        updated.setName("Updated Card");
+        updated.setAccountName("Updated Card");
         updated.setBalance(BigDecimal.TEN);
         updated.setAccountNumber("9876-5432-1098-7654");
 
@@ -116,7 +116,7 @@ class SubAccountServiceImplTest {
         SubAccount result = subAccountService.update(1, updated);
 
         assertNotNull(result);
-        assertEquals("Updated Card", result.getName());
+        assertEquals("Updated Card", result.getAccountName());
         assertEquals(BigDecimal.TEN, result.getBalance());
         verify(subAccountRepository).findById(1);
         verify(subAccountRepository).save(subAccount);

@@ -26,8 +26,8 @@ public class SubAccount {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "account_name", nullable = false)
+    private String accountName;
 
     @Column(name = "account_number", nullable = false)
     private String accountNumber;
@@ -63,10 +63,11 @@ public class SubAccount {
     public String toString() {
         return "SubAccount{" +
                 "subAccountId=" + subAccountId +
-                ", name='" + name + '\'' +
+                ", accountName='" + accountName + '\'' +
                 ", accountNumber='" + accountNumber + '\'' +
                 ", cardType=" + cardType +
                 ", balance=" + balance +
                 '}';
     }
+
 }
