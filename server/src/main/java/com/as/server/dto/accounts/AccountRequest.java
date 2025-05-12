@@ -1,0 +1,164 @@
+package com.as.server.dto.accounts;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import javax.annotation.Generated;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Objects;
+
+/**
+ * AccountRequest
+ */
+
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-05-07T20:09:16.831236500+08:00[Asia/Shanghai]")
+public class AccountRequest {
+
+  @JsonProperty("name")
+  private String name;
+
+  @JsonProperty("typeId")
+  private Integer typeId;
+
+  /**
+   * 账户类型
+   */
+  public enum TypeEnum {
+    BANK("BANK"),
+    WECHAT("WECHAT"),
+    ALIPAY("ALIPAY"),
+    OTHER("OTHER");
+
+    private String value;
+
+    TypeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static TypeEnum fromValue(String value) {
+      for (TypeEnum b : TypeEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+  }
+
+  @JsonProperty("type")
+  private TypeEnum type;
+
+  public AccountRequest name(String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * 账户名称
+   * @return name
+   */
+  @NotNull
+  @Size(max = 100)
+  @Schema(name = "name", description = "账户名称", required = true)
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public AccountRequest typeId(Integer typeId) {
+    this.typeId = typeId;
+    return this;
+  }
+
+  /**
+   * 账户类型 ID，对应 account_types.type_id
+   * @return typeId
+   */
+  @NotNull
+  @Schema(name = "typeId", description = "账户类型 ID，对应 account_types.type_id", required = true)
+  public Integer getTypeId() {
+    return typeId;
+  }
+
+  public void setTypeId(Integer typeId) {
+    this.typeId = typeId;
+  }
+
+  public AccountRequest type(TypeEnum type) {
+    this.type = type;
+    return this;
+  }
+
+  /**
+   * 账户类型
+   * @return type
+   */
+  @NotNull
+  @Schema(name = "type", description = "账户类型", required = true)
+  public TypeEnum getType() {
+    return type;
+  }
+
+  public void setType(TypeEnum type) {
+    this.type = type;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    AccountRequest accountRequest = (AccountRequest) o;
+    return Objects.equals(this.name, accountRequest.name) &&
+            Objects.equals(this.typeId, accountRequest.typeId) &&
+            Objects.equals(this.type, accountRequest.type);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, typeId, type);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class AccountRequest {\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    typeId: ").append(toIndentedString(typeId)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+
