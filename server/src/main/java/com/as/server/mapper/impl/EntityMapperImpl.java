@@ -10,13 +10,7 @@ import com.as.server.dto.transactions.TransactionTypeDTO;
 import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
-import com.as.server.entity.Account;
-import com.as.server.entity.AccountType;
-import com.as.server.entity.SubAccount;
-import com.as.server.entity.Transaction;
-import com.as.server.entity.TransactionType;
-import com.as.server.entity.User;
-import com.as.server.enums.CardType;
+import com.as.server.entity.*;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.repository.AccountTypeRepository;
 import org.springframework.stereotype.Component;
@@ -24,9 +18,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Generated;
 
 @Generated(
-    value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-12T18:07:39+0800",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 1.8.0_421 (Oracle Corporation)"
+        value = "org.mapstruct.ap.MappingProcessor",
+        date = "2025-05-13T20:57:53+0800",
+        comments = "version: 1.5.5.Final, compiler: javac, environment: Java 1.8.0_421 (Oracle Corporation)"
 )
 @Component
 public class EntityMapperImpl implements EntityMapper {
@@ -42,7 +36,7 @@ public class EntityMapperImpl implements EntityMapper {
         userDTO.setUserId( user.getUserId() );
         userDTO.setUsername( user.getUsername() );
 
-        userDTO.setRole( user.getIsAdmin() ? com.as.server.dto.users.UserDTO.RoleEnum.ADMIN : com.as.server.dto.users.UserDTO.RoleEnum.USER );
+        userDTO.setRole( user.getIsAdmin() ? com.as.server.enums.Role.ADMIN : com.as.server.enums.Role.USER );
 
         return userDTO;
     }
@@ -105,7 +99,7 @@ public class EntityMapperImpl implements EntityMapper {
         subAccountDTO.setAccountId( subAccountAccountAccountId( subAccount ) );
         subAccountDTO.setaccountName( subAccount.getAccountName() );
         subAccountDTO.setAccountNumber( subAccount.getAccountNumber() );
-        subAccountDTO.setCardType( cardTypeToCardTypeEnum( subAccount.getCardType() ) );
+        subAccountDTO.setCardType( subAccount.getCardType() );
         subAccountDTO.setBalance( bigDecimalToString( subAccount.getBalance() ) );
 
         return subAccountDTO;
@@ -122,7 +116,7 @@ public class EntityMapperImpl implements EntityMapper {
         subAccount.setAccount( toAccount( request.getAccountId() ) );
         subAccount.setAccountName( request.getaccountName() );
         subAccount.setAccountNumber( request.getAccountNumber() );
-        subAccount.setCardType( cardTypeEnumToCardType( request.getCardType() ) );
+        subAccount.setCardType( request.getCardType() );
         subAccount.setBalance( stringToBigDecimal( request.getBalance() ) );
 
         return subAccount;
@@ -237,50 +231,6 @@ public class EntityMapperImpl implements EntityMapper {
             return null;
         }
         return accountId;
-    }
-
-    protected SubAccountDTO.CardTypeEnum cardTypeToCardTypeEnum(CardType cardType) {
-        if ( cardType == null ) {
-            return null;
-        }
-
-        SubAccountDTO.CardTypeEnum cardTypeEnum;
-
-        switch ( cardType ) {
-            case SAVINGS: cardTypeEnum = SubAccountDTO.CardTypeEnum.SAVINGS;
-            break;
-            case DEBIT: cardTypeEnum = SubAccountDTO.CardTypeEnum.DEBIT;
-            break;
-            case CREDIT: cardTypeEnum = SubAccountDTO.CardTypeEnum.CREDIT;
-            break;
-            case WALLET: cardTypeEnum = SubAccountDTO.CardTypeEnum.WALLET;
-            break;
-            default: throw new IllegalArgumentException( "Unexpected enum constant: " + cardType );
-        }
-
-        return cardTypeEnum;
-    }
-
-    protected CardType cardTypeEnumToCardType(SubAccountRequest.CardTypeEnum cardTypeEnum) {
-        if ( cardTypeEnum == null ) {
-            return null;
-        }
-
-        CardType cardType;
-
-        switch ( cardTypeEnum ) {
-            case SAVINGS: cardType = CardType.SAVINGS;
-            break;
-            case DEBIT: cardType = CardType.DEBIT;
-            break;
-            case CREDIT: cardType = CardType.CREDIT;
-            break;
-            case WALLET: cardType = CardType.WALLET;
-            break;
-            default: throw new IllegalArgumentException( "Unexpected enum constant: " + cardTypeEnum );
-        }
-
-        return cardType;
     }
 
     private Integer transactionTransactionTypeTypeId(Transaction transaction) {

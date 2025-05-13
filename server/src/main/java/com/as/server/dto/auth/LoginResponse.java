@@ -1,8 +1,7 @@
 package com.as.server.dto.auth;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.as.server.enums.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Generated;
@@ -19,43 +18,10 @@ public class LoginResponse   {
   @JsonProperty("token")
   private String token;
 
-  /**
-   * 用户角色
-   */
-  public enum RoleEnum {
-    ADMIN("ADMIN"),
-    
-    USER("USER");
 
-    private String value;
-
-    RoleEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static RoleEnum fromValue(String value) {
-      for (RoleEnum b : RoleEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
 
   @JsonProperty("role")
-  private RoleEnum role;
+  private Role role;
 
   public LoginResponse token(String token) {
     this.token = token;
@@ -76,7 +42,7 @@ public class LoginResponse   {
     this.token = token;
   }
 
-  public LoginResponse role(RoleEnum role) {
+  public LoginResponse role(Role role) {
     this.role = role;
     return this;
   }
@@ -87,11 +53,11 @@ public class LoginResponse   {
   */
   @NotNull 
   @Schema(name = "role", description = "用户角色", required = true)
-  public RoleEnum getRole() {
+  public Role getRole() {
     return role;
   }
 
-  public void setRole(RoleEnum role) {
+  public void setRole(Role role) {
     this.role = role;
   }
 

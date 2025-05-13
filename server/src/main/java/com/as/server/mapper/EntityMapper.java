@@ -22,12 +22,12 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-
+// @Mapper
 public interface EntityMapper {
 
     @Mapping(target = "userId", source = "userId")
     @Mapping(target = "username", source = "username")
-    @Mapping(target = "role", expression = "java(user.getIsAdmin() ? com.as.server.dto.users.UserDTO.RoleEnum.ADMIN : com.as.server.dto.users.UserDTO.RoleEnum.USER)")
+    @Mapping(target = "role", expression = "java(user.getIsAdmin() ? com.as.server.enums.Role.ADMIN : com.as.server.enums.Role.USER)")
     UserDTO toUserDTO(User user);
 
     @Mapping(target = "userId", ignore = true)

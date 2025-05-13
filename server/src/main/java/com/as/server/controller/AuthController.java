@@ -4,6 +4,7 @@ import com.as.server.dto.auth.LoginRequest;
 import com.as.server.dto.auth.LoginResponse;
 import com.as.server.dto.error.ApiError;
 import com.as.server.entity.User;
+import com.as.server.enums.Role;
 import com.as.server.security.JwtUtil;
 import com.as.server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getUserId(), role);
         LoginResponse response = new LoginResponse();
         response.setToken(token);
-        response.setRole(LoginResponse.RoleEnum.valueOf(role));
+        response.setRole(Role.valueOf(role));
         return ResponseEntity.ok(response);
     }
 }

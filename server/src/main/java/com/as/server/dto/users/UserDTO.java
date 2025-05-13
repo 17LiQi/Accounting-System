@@ -1,8 +1,7 @@
 package com.as.server.dto.users;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.as.server.enums.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Generated;
@@ -23,43 +22,8 @@ public class UserDTO {
   @JsonProperty("username")
   private String username;
 
-  /**
-   * Gets or Sets role
-   */
-  public enum RoleEnum {
-    ADMIN("ADMIN"),
-    
-    USER("USER");
-
-    private String value;
-
-    RoleEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static RoleEnum fromValue(String value) {
-      for (RoleEnum b : RoleEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   @JsonProperty("role")
-  private RoleEnum role;
+  private Role role;
 
   public UserDTO userId(Integer userId) {
     this.userId = userId;
@@ -99,7 +63,7 @@ public class UserDTO {
     this.username = username;
   }
 
-  public UserDTO role(RoleEnum role) {
+  public UserDTO role(Role role) {
     this.role = role;
     return this;
   }
@@ -110,11 +74,11 @@ public class UserDTO {
   */
   @NotNull 
   @Schema(name = "role", required = true)
-  public RoleEnum getRole() {
+  public Role getRole() {
     return role;
   }
 
-  public void setRole(RoleEnum role) {
+  public void setRole(Role role) {
     this.role = role;
   }
 

@@ -1,8 +1,7 @@
 package com.as.server.dto.accounts;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.as.server.enums.CardType;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Generated;
@@ -27,47 +26,8 @@ public class SubAccountRequest   {
   @JsonProperty("accountNumber")
   private String accountNumber;
 
-  /**
-   * Gets or Sets cardType
-   */
-  public enum CardTypeEnum {
-    SAVINGS("SAVINGS"),
-    
-    DEBIT("DEBIT"),
-    
-    CREDIT("CREDIT"),
-    
-    WALLET("WALLET");
-
-    private String value;
-
-    CardTypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static CardTypeEnum fromValue(String value) {
-      for (CardTypeEnum b : CardTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   @JsonProperty("cardType")
-  private CardTypeEnum cardType;
+  private CardType cardType;
 
   @JsonProperty("balance")
   private String balance;
@@ -129,7 +89,7 @@ public class SubAccountRequest   {
     this.accountNumber = accountNumber;
   }
 
-  public SubAccountRequest cardType(CardTypeEnum cardType) {
+  public SubAccountRequest cardType(CardType cardType) {
     this.cardType = cardType;
     return this;
   }
@@ -140,11 +100,11 @@ public class SubAccountRequest   {
   */
   @NotNull 
   @Schema(name = "cardType", required = true)
-  public CardTypeEnum getCardType() {
+  public CardType getCardType() {
     return cardType;
   }
 
-  public void setCardType(CardTypeEnum cardType) {
+  public void setCardType(CardType cardType) {
     this.cardType = cardType;
   }
 

@@ -3,6 +3,7 @@ package com.as.server.controller;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
 import com.as.server.entity.User;
+import com.as.server.enums.Role;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +51,7 @@ public class UserControllerTest {
         UserRequest request = new UserRequest();
         request.setUsername("testuser");
         request.setPassword("password");
-        request.setRole(UserRequest.RoleEnum.valueOf("USER"));
+        request.setRole(Role.valueOf("USER"));
 
         User user = new User();
         user.setUserId(1);
@@ -61,7 +62,7 @@ public class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setUserId(1);
         userDTO.setUsername("testuser");
-        userDTO.setRole(UserDTO.RoleEnum.valueOf("USER"));
+        userDTO.setRole(Role.valueOf("USER"));
 
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
         when(entityMapper.toUser(any(UserRequest.class))).thenReturn(user);
@@ -84,7 +85,7 @@ public class UserControllerTest {
         UserRequest request = new UserRequest();
         request.setUsername("testuser");
         request.setPassword("password");
-        request.setRole(UserRequest.RoleEnum.valueOf("USER"));
+        request.setRole(Role.valueOf("USER"));
 
         when(entityMapper.toUser(any(UserRequest.class))).thenReturn(new User());
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
@@ -104,7 +105,7 @@ public class UserControllerTest {
         UserRequest request = new UserRequest();
         request.setUsername("testuser");
         request.setPassword("password");
-        request.setRole(UserRequest.RoleEnum.valueOf("USER"));
+        request.setRole(Role.valueOf("USER"));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,7 +128,7 @@ public class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setUserId(1);
         userDTO.setUsername("testuser");
-        userDTO.setRole(UserDTO.RoleEnum.valueOf("USER"));
+        userDTO.setRole(Role.valueOf("USER"));
 
         List<User> users = Collections.singletonList(user);
         when(userService.findAll()).thenReturn(users);
@@ -147,7 +148,7 @@ public class UserControllerTest {
         UserRequest request = new UserRequest();
         request.setUsername("updateduser");
         request.setPassword("newpassword");
-        request.setRole(UserRequest.RoleEnum.valueOf("USER"));
+        request.setRole(Role.valueOf("USER"));
 
         User user = new User();
         user.setUserId(1);
@@ -158,7 +159,7 @@ public class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setUserId(1);
         userDTO.setUsername("updateduser");
-        userDTO.setRole(UserDTO.RoleEnum.valueOf("USER"));
+        userDTO.setRole(Role.valueOf("USER"));
 
         when(passwordEncoder.encode("newpassword")).thenReturn("encodedNewPassword");
         when(entityMapper.toUser(any(UserRequest.class))).thenReturn(user);

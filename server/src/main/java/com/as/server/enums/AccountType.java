@@ -4,32 +4,37 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Gets or Sets period
+ * 账户类型
  */
-public enum Period {
-    DAILY("daily"),
+public enum AccountType {
+    BANK("BANK"),
 
-    WEEKLY("weekly"),
+    WECHAT("WECHAT"),
 
-    MONTHLY("monthly"),
+    ALIPAY("ALIPAY"),
 
-    YEARLY("yearly");
+    OTHER("OTHER");
 
     private final String value;
 
-    Period(String value) {
+    AccountType(String value) {
         this.value = value;
     }
 
     @JsonValue
     public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
         return String.valueOf(value);
     }
 
     @JsonCreator
-    public static Period fromValue(String value) {
-        for (Period b : Period.values()){
-            if (b.value.equals(value)){
+    public static AccountType fromValue(String value) {
+        for (AccountType b : AccountType.values()) {
+            if (b.value.equals(value)) {
                 return b;
             }
         }

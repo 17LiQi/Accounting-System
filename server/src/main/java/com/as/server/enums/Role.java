@@ -4,32 +4,33 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Gets or Sets period
+ * 用户角色
  */
-public enum Period {
-    DAILY("daily"),
+public enum Role {
+    ADMIN("ADMIN"),
 
-    WEEKLY("weekly"),
-
-    MONTHLY("monthly"),
-
-    YEARLY("yearly");
+    USER("USER");
 
     private final String value;
 
-    Period(String value) {
+    Role(String value) {
         this.value = value;
     }
 
     @JsonValue
     public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
         return String.valueOf(value);
     }
 
     @JsonCreator
-    public static Period fromValue(String value) {
-        for (Period b : Period.values()){
-            if (b.value.equals(value)){
+    public static Role fromValue(String value) {
+        for (Role b : Role.values()) {
+            if (b.value.equals(value)) {
                 return b;
             }
         }

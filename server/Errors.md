@@ -18,6 +18,9 @@
 有的表使用了混合的字段命名方式,如type_id 和 user_id 等字段的命名则没有统一规则,容易产生歧义
 - 尝试重构表,调整相关代码函数问题
 
+# 自动生成的MapperImpl注解缺失
+- 通过@Mapper注解自动生成的MapperImpl缺失注解@Component
+
 # 使用Lombok和MapStruct注解的异常问题
 - 同时引入了lombok和mapstruct时, 会出现No property named “xxx” exists in source parameter(s)错误
 - 解决办法为在annotationProcessorPaths 中，配置lombok
@@ -86,3 +89,4 @@ private final String value;
 ```
 - 考虑为其他枚举类规范化
 - 考虑提取[AccountDTO.java](src/main/java/com/as/server/dto/accounts/AccountDTO.java)中的枚举
+- 提取CardType注解,统一放在enums中,导入CardType枚举类到DTO和request中统一管理

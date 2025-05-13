@@ -3,7 +3,7 @@ package com.as.server.controller;
 import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
 import com.as.server.entity.Account;
-import com.as.server.entity.AccountType;
+import com.as.server.enums.AccountType;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.repository.AccountTypeRepository;
 import com.as.server.service.AccountService;
@@ -23,7 +23,8 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -53,9 +54,9 @@ public class AccountControllerTest {
         AccountRequest request = new AccountRequest();
         request.setaccountName("Test Account");
         request.setTypeId(1);
-        request.setType(AccountRequest.TypeEnum.BANK);
+        request.setType(AccountType.BANK);
 
-        AccountType accountType = new AccountType();
+        com.as.server.entity.AccountType accountType = new com.as.server.entity.AccountType();
         accountType.setTypeId(1);
         accountType.setTypeName("BANK");
 
@@ -109,7 +110,7 @@ public class AccountControllerTest {
         Account account = new Account();
         account.setAccountId(1);
         account.setAccountName("Test Account");
-        AccountType accountType = new AccountType();
+        com.as.server.entity.AccountType accountType = new com.as.server.entity.AccountType();
         accountType.setTypeId(1);
         accountType.setTypeName("BANK");
         account.setAccountType(accountType);
@@ -139,9 +140,9 @@ public class AccountControllerTest {
         AccountRequest request = new AccountRequest();
         request.setaccountName("Updated Account");
         request.setTypeId(1);
-        request.setType(AccountRequest.TypeEnum.BANK);
+        request.setType(AccountType.BANK);
 
-        AccountType accountType = new AccountType();
+        com.as.server.entity.AccountType accountType = new com.as.server.entity.AccountType();
         accountType.setTypeId(1);
         accountType.setTypeName("BANK");
 
@@ -199,7 +200,7 @@ public class AccountControllerTest {
         AccountRequest request = new AccountRequest();
         request.setaccountName("Test Account");
         request.setTypeId(1);
-        request.setType(AccountRequest.TypeEnum.BANK);
+        request.setType(AccountType.BANK);
 
         mockMvc.perform(post("/accounts")
                         .contentType(MediaType.APPLICATION_JSON)

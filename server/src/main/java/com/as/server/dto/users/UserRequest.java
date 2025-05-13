@@ -1,15 +1,13 @@
 package com.as.server.dto.users;
 
-import java.util.Objects;
+import com.as.server.enums.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import javax.validation.constraints.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-
 import javax.annotation.Generated;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Objects;
 
 /**
  * UserRequest
@@ -24,43 +22,8 @@ public class UserRequest   {
   @JsonProperty("password")
   private String password;
 
-  /**
-   * Gets or Sets role
-   */
-  public enum RoleEnum {
-    ADMIN("ADMIN"),
-    
-    USER("USER");
-
-    private String value;
-
-    RoleEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static RoleEnum fromValue(String value) {
-      for (RoleEnum b : RoleEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   @JsonProperty("role")
-  private RoleEnum role;
+  private Role role;
 
   public UserRequest username(String username) {
     this.username = username;
@@ -100,7 +63,7 @@ public class UserRequest   {
     this.password = password;
   }
 
-  public UserRequest role(RoleEnum role) {
+  public UserRequest role(Role role) {
     this.role = role;
     return this;
   }
@@ -111,11 +74,11 @@ public class UserRequest   {
   */
   @NotNull 
   @Schema(name = "role", required = true)
-  public RoleEnum getRole() {
+  public Role getRole() {
     return role;
   }
 
-  public void setRole(RoleEnum role) {
+  public void setRole(Role role) {
     this.role = role;
   }
 

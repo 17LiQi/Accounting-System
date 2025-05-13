@@ -1,8 +1,7 @@
 package com.as.server.dto.accounts;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.as.server.enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Generated;
@@ -23,44 +22,8 @@ public class AccountRequest {
   @JsonProperty("typeId")
   private Integer typeId;
 
-  /**
-   * 账户类型
-   */
-  public enum TypeEnum {
-    BANK("BANK"),
-    WECHAT("WECHAT"),
-    ALIPAY("ALIPAY"),
-    OTHER("OTHER");
-
-    private String value;
-
-    TypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static TypeEnum fromValue(String value) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   @JsonProperty("type")
-  private TypeEnum type;
+  private AccountType type;
 
   public AccountRequest accountName(String accountName) {
     this.accountName = accountName;
@@ -101,7 +64,7 @@ public class AccountRequest {
     this.typeId = typeId;
   }
 
-  public AccountRequest type(TypeEnum type) {
+  public AccountRequest type(AccountType type) {
     this.type = type;
     return this;
   }
@@ -112,11 +75,11 @@ public class AccountRequest {
    */
   @NotNull
   @Schema(name = "type", description = "账户类型", required = true)
-  public TypeEnum getType() {
+  public AccountType getType() {
     return type;
   }
 
-  public void setType(TypeEnum type) {
+  public void setType(AccountType type) {
     this.type = type;
   }
 
