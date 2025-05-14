@@ -3,7 +3,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-package com.as.server.api.accounts;
+package com.as.server.api.subaccounts;
 
 import com.as.server.dto.accounts.SubAccountDTO;
 import com.as.server.dto.accounts.SubAccountRequest;
@@ -29,6 +29,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.annotation.Generated;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-05-07T20:30:49.533631100+08:00[Asia/Shanghai]")
@@ -153,7 +154,7 @@ public interface SubAccountsApi {
         produces = { "application/json" },
         consumes = { "application/json" }
     )
-    default ResponseEntity<SubAccount> subAccountsUpdate(
+    default ResponseEntity<SubAccountDTO> subAccountsUpdate(
         @Parameter(name = "subAccountId", description = "", required = true, schema = @Schema(description = "")) @PathVariable("subAccountId") Integer subAccountId,
         @Parameter(name = "SubAccountRequest", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) SubAccountRequest subAccountRequest
     ) {
@@ -169,5 +170,50 @@ public interface SubAccountsApi {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
+
+    /**
+     * GET /sub-accounts : 列出子账户
+     * 管理员列出所有子账户。
+     *
+     * @return 子账户列表 (status code 200)
+     *         or 权限不足 (status code 403)
+     */
+    @Operation(
+            operationId = "getSubAccounts",
+            summary = "列出子账户",
+            tags = { "sub-accounts" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "子账户列表", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SubAccountDTO.class, type = "array"))),
+                    @ApiResponse(responseCode = "403", description = "权限不足", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class)))
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @RequestMapping(method = RequestMethod.GET, value = "/sub-accounts", produces = { "application/json" })
+    ResponseEntity<List<SubAccountDTO>> subAccountsGet();
+
+    /**
+     * GET /sub-accounts/{subAccountId} : 获取子账户详情
+     * 管理员获取指定子账户的详细信息。
+     *
+     * @param subAccountId  (required)
+     * @return 子账户详情 (status code 200)
+     *         or 权限不足 (status code 403)
+     *         or 子账户不存在 (status code 404)
+     */
+    @Operation(
+            operationId = "getSubAccount",
+            summary = "获取子账户详情",
+            tags = { "sub-accounts" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "子账户详情", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SubAccountDTO.class))),
+                    @ApiResponse(responseCode = "403", description = "权限不足", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "404", description = "子账户不存在", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class)))
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @RequestMapping(method = RequestMethod.GET, value = "/sub-accounts/{subAccountId}", produces = { "application/json" })
+    ResponseEntity<SubAccountDTO> subAccountGet(
+            @Parameter(name = "subAccountId", description = "子账户 ID", required = true, schema = @Schema(type = "integer")) @PathVariable("subAccountId") Integer subAccountId
+    );
 
 }

@@ -1,4 +1,4 @@
-package com.as.server.controller;
+package com.as.server.controllerTest;
 
 import com.as.server.dto.accounts.SubAccountRequest;
 import com.as.server.entity.Account;
@@ -101,7 +101,7 @@ public class SubAccountControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.message").value("Validation failed for request: balance must match \"^\\d+(\\.\\d{2})?$\""));
+                .andExpect(jsonPath("$.message").value("balance: must match \"^\\d+(\\.\\d{2})?$\""));
     }
 
     @Test

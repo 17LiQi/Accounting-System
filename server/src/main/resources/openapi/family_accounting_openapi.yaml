@@ -58,7 +58,7 @@ components:
       required:
         - token
         - role
-    User:
+    UserDTO:
       type: object
       properties:
         id:
@@ -90,7 +90,7 @@ components:
         - username
         - password
         - role
-    Account:
+    AccountDTO:
       type: object
       properties:
         accountId:
@@ -131,7 +131,7 @@ components:
         - name
         - type
         - typeId
-    SubAccount:
+    SubAccountDTO:
       type: object
       properties:
         subAccountId:
@@ -183,7 +183,7 @@ components:
         - accountNumber
         - cardType
         - balance
-    Transaction:
+    TransactionDTO:
       type: object
       properties:
         transactionId:
@@ -246,14 +246,14 @@ components:
         transactions:
           type: array
           items:
-            $ref: '#/components/schemas/Transaction'
+            $ref: '#/components/schemas/TransactionDTO'
         total:
           type: integer
           format: int32
       required:
         - transactions
         - total
-    TransactionType:
+    TransactionTypeDTO:
       type: object
       properties:
         typeId:
@@ -392,7 +392,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDTO'
         '400':
           description: 无效输入（用户名重复或参数错误）
           content:
@@ -421,7 +421,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/UserDTO'
         '403':
           description: 权限不足（非管理员）
           content:
@@ -456,7 +456,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDTO'
         '400':
           description: 无效输入（用户名重复或参数错误）
           content:
@@ -532,7 +532,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountDTO'
         '400':
           description: 无效输入（名称重复或参数错误）
           content:
@@ -561,7 +561,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Account'
+                  $ref: '#/components/schemas/AccountDTO'
         '403':
           description: 权限不足（非管理员）
           content:
@@ -596,7 +596,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                $ref: '#/components/schemas/AccountDTO'
         '400':
           description: 无效输入（名称重复或参数错误）
           content:
@@ -672,7 +672,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubAccount'
+                $ref: '#/components/schemas/SubAccountDTO'
         '400':
           description: 无效输入（账户编号重复或参数格式错误）
           content:
@@ -685,6 +685,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+    get:
+      operationId: getSubAccounts
+      summary: 列出子账户
+      tags:
+        - sub-accounts
+      responses:
+        '200':
+          description: 子账户列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubAccountDTO'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: [ ]
   /sub-accounts/{subAccountId}:
     put:
       tags:
@@ -712,7 +734,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubAccount'
+                $ref: '#/components/schemas/SubAccountDTO'
         '400':
           description: 无效输入（账户编号重复或参数格式错误）
           content:
@@ -767,6 +789,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+    get:
+      operationId: getSubAccount
+      summary: 获取子账户详情
+      tags:
+        - sub-accounts
+      parameters:
+        - name: subAccountId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 子账户详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubAccountDTO'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 子账户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: [ ]
   /transactions:
     post:
       tags:
@@ -789,7 +843,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Transaction'
+                $ref: '#/components/schemas/TransactionDTO'
         '400':
           description: 无效输入（交易类型不存在或参数格式错误）
           content:
@@ -864,14 +918,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransactionType'
+              $ref: '#/components/schemas/TransactionTypeDTO'
       responses:
         '201':
           description: 交易类型已创建
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionType'
+                $ref: '#/components/schemas/TransactionTypeDTO'
         '400':
           description: 无效输入（名称重复或参数错误）
           content:
@@ -900,7 +954,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TransactionType'
+                  $ref: '#/components/schemas/TransactionTypeDTO'
         '403':
           description: 权限不足
           content:
@@ -928,14 +982,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransactionType'
+              $ref: '#/components/schemas/TransactionTypeDTO'
       responses:
         '200':
           description: 交易类型已更新
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionType'
+                $ref: '#/components/schemas/TransactionTypeDTO'
         '400':
           description: 无效输入（名称重复或参数错误）
           content:

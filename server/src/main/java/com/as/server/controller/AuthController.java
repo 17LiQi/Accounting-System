@@ -1,5 +1,6 @@
 package com.as.server.controller;
 
+import com.as.server.api.auth.AuthApi;
 import com.as.server.dto.auth.LoginRequest;
 import com.as.server.dto.auth.LoginResponse;
 import com.as.server.dto.error.ApiError;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/login")
-public class AuthController {
+public class AuthController implements AuthApi {
 
     @Autowired
     private UserService userService;
@@ -29,15 +30,26 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Override
     @PostMapping
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> authLogin(@RequestBody LoginRequest request) {
+        if (request == null ||
+                request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            ApiError error = new ApiError();
+            error.setCode(ApiError.CodeEnum.INVALID_CREDENTIALS);
+            error.setMessage("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
         User user = userService.findByUsername(request.getUsername());
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             ApiError error = new ApiError();
-            error.setCode(ApiError.CodeEnum.valueOf("INVALID_CREDENTIALS"));
+            error.setCode(ApiError.CodeEnum.INVALID_CREDENTIALS);
             error.setMessage("Invalid username or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+
         String role = user.getIsAdmin() ? "ADMIN" : "USER";
         String token = jwtUtil.generateToken(user.getUserId(), role);
         LoginResponse response = new LoginResponse();

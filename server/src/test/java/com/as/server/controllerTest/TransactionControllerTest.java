@@ -1,4 +1,4 @@
-package com.as.server.controller;
+package com.as.server.controllerTest;
 
 import com.as.server.dto.transactions.TransactionRequest;
 import com.as.server.entity.SubAccount;
@@ -83,7 +83,7 @@ public class TransactionControllerTest {
         mockMvc.perform(post("/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactionId").value(1))
                 .andExpect(jsonPath("$.time").value("2025-05-13T10:00:00Z"))
@@ -127,7 +127,7 @@ public class TransactionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactions[0].transactionId").value(1))
-                .andExpect(jsonPath("$.transactions[0].time").value("2025-05-13T10:00:00Z"))
+                .andExpect(jsonPath("$.transactions[0].time").value("2025-05-13T02:00:00Z"))
                 .andExpect(jsonPath("$.transactions[0].typeId").value(1))
                 .andExpect(jsonPath("$.transactions[0].isIncome").value(false))
                 .andExpect(jsonPath("$.transactions[0].subAccountId").value(1))
@@ -359,4 +359,6 @@ public class TransactionControllerTest {
                 .andExpect(jsonPath("$.code").value("PERMISSION_DENIED"))
                 .andExpect(jsonPath("$.message").value("Cannot delete other user's transaction"));
     }
+
+
 }

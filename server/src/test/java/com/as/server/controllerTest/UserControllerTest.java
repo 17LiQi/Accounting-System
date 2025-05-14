@@ -1,4 +1,4 @@
-package com.as.server.controller;
+package com.as.server.controllerTest;
 
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;

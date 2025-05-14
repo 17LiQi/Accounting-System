@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import javax.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -69,7 +72,7 @@ public class GlobalExceptionHandler {
         log.debug("MethodArgumentNotValidException: {}", e.getMessage());
         log.error("Validation failed: {}", e.getBindingResult().getAllErrors(), e);
         FieldError fieldError = e.getBindingResult().getFieldErrors().get(0);
-        String message = String.format("Validation failed for request: %s %s", fieldError.getField(), fieldError.getDefaultMessage());
+        String message = String.format("%s: %s", fieldError.getField(), fieldError.getDefaultMessage());
         ApiError error = new ApiError()
                 .code(ApiError.CodeEnum.VALIDATION_FAILED)
                 .message(message);
@@ -102,8 +105,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleNullPointerException(NullPointerException e) {
         log.debug("NullPointerException: {}", e.getMessage());
         ApiError error = new ApiError()
-                .code(ApiError.CodeEnum.INTERNAL_ERROR) // 新增 INTERNAL_ERROR
+                .code(ApiError.CodeEnum.INTERNAL_ERROR)
                 .message("Unexpected null value: " + (e.getMessage() != null ? e.getMessage() : "Unknown"));
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException e) {
+        log.debug("ConstraintViolationException: {}", e.getMessage());
+        String message = e.getConstraintViolations().stream()
+                .map(v -> {
+                    String path = v.getPropertyPath().toString();
+                    String paramName = path.substring(path.lastIndexOf('.') + 1);
+                    return paramName + " " + v.getMessage();
+                })
+                .collect(Collectors.joining(", "));
+        ApiError error = new ApiError()
+                .code(ApiError.CodeEnum.INVALID_REQUEST)
+                .message(message);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 }

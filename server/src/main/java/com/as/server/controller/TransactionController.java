@@ -1,5 +1,6 @@
 package com.as.server.controller;
 
+import com.as.server.api.transactions.TransactionsApi;
 import com.as.server.dto.transactions.TransactionDTO;
 import com.as.server.dto.transactions.TransactionListResponse;
 import com.as.server.dto.transactions.TransactionRequest;
@@ -7,30 +8,38 @@ import com.as.server.entity.SubAccount;
 import com.as.server.entity.Transaction;
 import com.as.server.entity.TransactionType;
 import com.as.server.entity.User;
+import com.as.server.mapper.EntityMapper;
 import com.as.server.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.stream.Collectors;
 
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
+
+@Validated
 @RestController
 @RequestMapping("/transactions")
-public class TransactionController {
+public class TransactionController implements TransactionsApi {
+
+    @Autowired
+    private EntityMapper entityMapper;
 
     private static final Logger log = LoggerFactory.getLogger(TransactionController.class);
     private final TransactionService transactionService;
@@ -39,9 +48,10 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+    @Override
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<TransactionDTO> createTransaction(@RequestBody TransactionRequest request) {
+    public ResponseEntity<TransactionDTO> transactionsCreate(@RequestBody TransactionRequest request) {
         log.debug("Received create transaction request: {}", request);
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
@@ -49,37 +59,49 @@ public class TransactionController {
         Transaction created = transactionService.create(transaction);
         TransactionDTO response = mapEntityToDTO(created);
         log.debug("Created transaction: {}", response);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<TransactionListResponse> getTransactions(
-            @RequestParam(required = false) Integer userId,
-            @RequestParam(required = false) Integer subAccountId,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size) {
-        log.debug("Received get transactions request: userId={}, subAccountId={}, page={}, size={}",
-                userId, subAccountId, page, size);
-        Authentication auth = getContext().getAuthentication();
-        Integer effectiveUserId = userId != null ? userId : Integer.valueOf(auth.getName());
-        if (userId != null && !auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")) &&
-                !userId.equals(Integer.valueOf(auth.getName()))) {
-            log.warn("User {} attempted to access transactions of user {}", auth.getName(), userId);
+    public ResponseEntity<TransactionListResponse> transactionsList(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "subAccountId", required = false) Integer subAccountId) {
+        log.debug("Received transactionsList request with page={}, size={}, userId={}, subAccountId={}",
+                page, size, userId, subAccountId);
+        // 手动验证参数
+        if (page == null) {
+            throw new IllegalArgumentException("page must not be null");
+        }
+        if (size == null) {
+            throw new IllegalArgumentException("size must not be null");
+        }
+        if (page < 0) {
+            throw new IllegalArgumentException("page must be greater than or equal to 0");
+        }
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("size must be between 1 and 100");
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer authenticatedUserId = Integer.parseInt(authentication.getName());
+        if (userId != null && !userId.equals(authenticatedUserId) && !authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            log.warn("User {} attempted to access transactions of user {}", authenticatedUserId, userId);
             throw new AccessDeniedException("Cannot access other user's transactions");
         }
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Transaction> transactionPage = transactionService.findAll(effectiveUserId, subAccountId, pageable);
-        TransactionListResponse response = new TransactionListResponse()
-                .transactions(transactionPage.getContent().stream().map(this::mapEntityToDTO).collect(Collectors.toList()))
-                .total((int) transactionPage.getTotalElements());
-        log.debug("Returning {} transactions", response.getTransactions().size());
+        Page<Transaction> transactions = transactionService.findAll(userId != null ? userId : authenticatedUserId,
+                subAccountId, PageRequest.of(page, size));
+        TransactionListResponse response = entityMapper.toTransactionListResponse(transactions);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable Integer id) {
+    public ResponseEntity<TransactionDTO> transactionGet(@PathVariable Integer id) {
         log.debug("Received get transaction request: id={}", id);
         Authentication auth = getContext().getAuthentication();
         Transaction transaction = transactionService.findById(id);
@@ -93,9 +115,10 @@ public class TransactionController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<TransactionDTO> updateTransaction(@PathVariable Integer id, @RequestBody TransactionRequest request) {
+    public ResponseEntity<TransactionDTO> transactionUpdate(@PathVariable Integer id, @RequestBody TransactionRequest request) {
         log.debug("Received update transaction request: id={}, request={}", id, request);
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
@@ -116,9 +139,10 @@ public class TransactionController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Integer id) {
+    public ResponseEntity<Void> transactionDelete(@PathVariable Integer id) {
         log.debug("Received delete transaction request: id={}", id);
         Authentication auth = getContext().getAuthentication();
         Transaction transaction = transactionService.findById(id);

@@ -1,5 +1,6 @@
 package com.as.server.controller;
 
+import com.as.server.api.users.UsersApi;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
 import com.as.server.entity.User;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/users")
 @PreAuthorize("hasRole('ADMIN')")
-public class UserController {
+public class UserController implements UsersApi {
 
     @Autowired
     private UserService userService;
@@ -29,16 +30,18 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Override
     @PostMapping
-    public ResponseEntity<UserDTO> create(@RequestBody UserRequest request) {
+    public ResponseEntity<UserDTO> usersCreate(@RequestBody UserRequest request) {
         User user = entityMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         User created = userService.create(user);
         return ResponseEntity.status(201).body(entityMapper.toUserDTO(created));
     }
 
+    @Override
     @GetMapping
-    public ResponseEntity<List<UserDTO>> list() {
+    public ResponseEntity<List<UserDTO>> usersList() {
         List<User> users = userService.findAll();
         List<UserDTO> userDTOs = users.stream()
                 .map(entityMapper::toUserDTO)
@@ -46,16 +49,18 @@ public class UserController {
         return ResponseEntity.ok(userDTOs);
     }
 
+    @Override
     @PutMapping("/{userId}")
-    public ResponseEntity<UserDTO> update(@PathVariable Integer userId, @RequestBody UserRequest request) {
+    public ResponseEntity<UserDTO> usersUpdate(@PathVariable Integer userId, @RequestBody UserRequest request) {
         User user = entityMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         User updated = userService.update(userId, user);
         return ResponseEntity.ok(entityMapper.toUserDTO(updated));
     }
 
+    @Override
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> delete(@PathVariable Integer userId) {
+    public ResponseEntity<Void> usersDelete(@PathVariable Integer userId) {
         if (userService.hasTransactions(userId)) {
             throw new ConflictException("User has associated transactions");
         }

@@ -7,6 +7,7 @@ package com.as.server.api.transactions;
 
 import com.as.server.dto.error.ApiError;
 import com.as.server.dto.transactions.TransactionTypeDTO;
+import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.util.ApiUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -68,7 +69,7 @@ public interface TransactionTypesApi {
         consumes = { "application/json" }
     )
     default ResponseEntity<TransactionTypeDTO> transactionTypesCreate(
-        @Parameter(name = "TransactionType", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) TransactionTypeDTO transactionType
+        @Parameter(name = "TransactionType", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) TransactionTypeRequest transactionTypeRequest
     ) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
@@ -195,7 +196,7 @@ public interface TransactionTypesApi {
     )
     default ResponseEntity<TransactionTypeDTO> transactionTypesUpdate(
         @Parameter(name = "typeId", description = "交易类型 ID", required = true, schema = @Schema(description = "")) @PathVariable("typeId") Integer typeId,
-        @Parameter(name = "TransactionType", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) TransactionTypeDTO transactionType
+        @Parameter(name = "TransactionType", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) TransactionTypeRequest transactionTypeRequest
     ) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {

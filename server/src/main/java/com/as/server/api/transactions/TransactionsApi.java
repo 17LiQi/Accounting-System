@@ -21,10 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.annotation.Generated;
@@ -134,5 +131,75 @@ public interface TransactionsApi {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
+
+    /**
+     * GET /transactions/{transactionId} : 获取交易记录详情
+     * 获取指定 ID 的交易记录详情。普通用户仅可查看自己的记录（匹配 JWT 中的 userId）。 管理员可查看所有记录。
+     *
+     * @param transactionId  (required)
+     * @return 交易记录详情 (status code 200)
+     *         or 权限不足（普通用户尝试访问未关联的数据） (status code 403)
+     *         or 交易记录不存在 (status code 404)
+     */
+    @Operation(
+            operationId = "getTransaction",
+            summary = "获取交易记录详情",
+            tags = { "transactions" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "交易记录详情", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionDTO.class))),
+                    @ApiResponse(responseCode = "403", description = "权限不足（普通用户尝试访问未关联的数据）", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "404", description = "交易记录不存在", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class)))
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @RequestMapping(method = RequestMethod.GET, value = "/transactions/{transactionId}", produces = { "application/json" })
+    ResponseEntity<TransactionDTO> transactionGet(
+            @Parameter(name = "transactionId", description = "交易记录 ID", required = true, schema = @Schema(type = "integer")) @PathVariable("transactionId") Integer transactionId
+    );
+
+    /**
+     * PUT /transactions/{transactionId} : 更新交易记录
+     * 更新指定 ID 的交易记录。普通用户仅可更新自己的记录（匹配 JWT 中的 userId）。 管理员可更新所有记录。
+     *
+     * @param transactionId  (required)
+     * @param request  (required)
+     * @return 交易记录已更新 (status code 200)
+     *         or 无效输入（交易类型不存在或参数格式错误） (status code 400)
+     *         or 权限不足（普通用户尝试访问未关联的数据） (status code 403)
+     *         or 交易记录不存在 (status code 404)
+     */
+    @Operation(
+            operationId = "updateTransaction",
+            summary = "更新交易记录",
+            tags = { "transactions" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "交易记录已更新", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "无效输入（交易类型不存在或参数格式错误）", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "403", description = "权限不足（普通用户尝试访问未关联的数据）", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "404", description = "交易记录不存在", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class)))
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @RequestMapping(method = RequestMethod.PUT, value = "/transactions/{transactionId}", produces = { "application/json" }, consumes = { "application/json" })
+    ResponseEntity<TransactionDTO> transactionUpdate(
+            @Parameter(name = "transactionId", description = "交易记录 ID", required = true, schema = @Schema(type = "integer")) @PathVariable("transactionId") Integer transactionId,
+            @Parameter(name = "TransactionRequest", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) TransactionRequest transactionRequest
+    );
+
+    @Operation(
+            operationId = "deleteTransaction",
+            summary = "删除交易记录",
+            tags = { "transactions" },
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "交易记录已删除"),
+                    @ApiResponse(responseCode = "403", description = "权限不足（普通用户尝试访问未关联的数据）", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "404", description = "交易记录不存在", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class)))
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @RequestMapping(method = RequestMethod.DELETE, value = "/transactions/{transactionId}", produces = { "application/json" })
+    ResponseEntity<Void> transactionDelete(
+            @Parameter(name = "transactionId", description = "交易记录 ID", required = true, schema = @Schema(type = "integer")) @PathVariable("transactionId") Integer transactionId
+    );
 
 }

@@ -1,5 +1,6 @@
 package com.as.server.controller;
 
+import com.as.server.api.statistics.StatisticsApi;
 import com.as.server.dto.statistics.StatisticsResponse;
 import com.as.server.enums.Period;
 import com.as.server.service.StatisticsService;
@@ -7,10 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,7 +21,7 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 
 @RestController
 @RequestMapping("/statistics")
-public class StatisticsController {
+public class StatisticsController implements StatisticsApi {
 
     private static final Logger log = LoggerFactory.getLogger(StatisticsController.class);
     private final StatisticsService statisticsService;
@@ -31,7 +32,7 @@ public class StatisticsController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<StatisticsResponse> getStatistics(
+    public ResponseEntity<StatisticsResponse> statisticsGet(
             @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) Integer accountId,
             @RequestParam(required = false) Integer subAccountId,

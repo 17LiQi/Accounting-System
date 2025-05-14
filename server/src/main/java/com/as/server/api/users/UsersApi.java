@@ -3,7 +3,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-package com.as.server.api.User;
+package com.as.server.api.users;
 
 import com.as.server.dto.error.ApiError;
 import com.as.server.dto.users.UserDTO;

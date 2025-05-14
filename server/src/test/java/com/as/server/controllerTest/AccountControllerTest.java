@@ -1,4 +1,4 @@
-package com.as.server.controller;
+package com.as.server.controllerTest;
 
 import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
@@ -215,5 +215,32 @@ public class AccountControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("PERMISSION_DENIED"))
                 .andExpect(jsonPath("$.message").value("Access is denied"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER", username = "1")
+    void getTransactions_nullPage_failsValidation() throws Exception {
+        log.debug("Setting up getTransactions_nullPage_failsValidation");
+        mockMvc.perform(get("/transactions")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message").value("page must not be null"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER", username = "1")
+    void getTransactions_invalidSize_failsValidation() throws Exception {
+        log.debug("Setting up getTransactions_invalidSize_failsValidation");
+        mockMvc.perform(get("/transactions")
+                        .param("page", "0")
+                        .param("size", "101")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message").value("size must be less than or equal to 100"));
     }
 }

@@ -1,5 +1,6 @@
 package com.as.server.controller;
 
+import com.as.server.api.accounts.AccountsApi;
 import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
 import com.as.server.entity.Account;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/accounts")
-public class AccountController {
+public class AccountController implements AccountsApi {
 
     private final AccountService accountService;
     private final EntityMapper entityMapper;
@@ -29,18 +30,20 @@ public class AccountController {
         this.accountTypeRepository = accountTypeRepository;
     }
 
+    @Override
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AccountDTO> create(@Valid @RequestBody AccountRequest request) {
+    public ResponseEntity<AccountDTO> accountsCreate(@Valid @RequestBody AccountRequest request) {
         Account account = entityMapper.toAccount(request, accountTypeRepository);
         Account createdAccount = accountService.create(account);
         AccountDTO accountDTO = entityMapper.toAccountDTO(createdAccount);
         return new ResponseEntity<>(accountDTO, HttpStatus.CREATED);
     }
 
+    @Override
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<AccountDTO>> list() {
+    public ResponseEntity<List<AccountDTO>> accountsList() {
         List<Account> accounts = accountService.findAll();
         List<AccountDTO> accountDTOs = accounts.stream()
                 .map(entityMapper::toAccountDTO)
@@ -48,18 +51,20 @@ public class AccountController {
         return ResponseEntity.ok(accountDTOs);
     }
 
+    @Override
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AccountDTO> update(@PathVariable Integer id, @Valid @RequestBody AccountRequest request) {
+    public ResponseEntity<AccountDTO> accountsUpdate(@PathVariable Integer id, @Valid @RequestBody AccountRequest request) {
         Account account = entityMapper.toAccount(request, accountTypeRepository);
         Account updatedAccount = accountService.update(id, account);
         AccountDTO accountDTO = entityMapper.toAccountDTO(updatedAccount);
         return ResponseEntity.ok(accountDTO);
     }
 
+    @Override
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> accountsDelete(@PathVariable Integer id) {
         if (accountService.hasSubAccounts(id)) {
             throw new IllegalStateException("Account has associated sub-accounts");
         }

@@ -4,10 +4,7 @@ import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
 import com.as.server.dto.accounts.SubAccountDTO;
 import com.as.server.dto.accounts.SubAccountRequest;
-import com.as.server.dto.transactions.TransactionDTO;
-import com.as.server.dto.transactions.TransactionRequest;
-import com.as.server.dto.transactions.TransactionTypeDTO;
-import com.as.server.dto.transactions.TransactionTypeRequest;
+import com.as.server.dto.transactions.*;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
 import com.as.server.entity.*;
@@ -17,6 +14,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 // @Mapper
 public interface EntityMapper {
@@ -100,6 +99,21 @@ public interface EntityMapper {
     @Mapping(target = "isIncome", source = "isIncome")
     @Mapping(target = "transactions", ignore = true)
     TransactionType toTransactionType(TransactionTypeRequest request);
+
+    default TransactionListResponse toTransactionListResponse(Page<Transaction> transactions) {
+        if (transactions == null) {
+            logger.warn("Transactions page is null");
+            return null;
+        }
+        TransactionListResponse response = new TransactionListResponse();
+        response.setTransactions(transactions.getContent().stream()
+                .map(this::toTransactionDTO)
+                .collect(Collectors.toList()));
+        response.setTotal((int) transactions.getTotalElements());
+        logger.debug("Mapped {} transactions to TransactionListResponse with total={}",
+                transactions.getContent().size(), transactions.getTotalElements());
+        return response;
+    }
 
     // 工具方法
     @Named("bigDecimalToString")

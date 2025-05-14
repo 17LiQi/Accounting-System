@@ -1,9 +1,10 @@
 package com.as.server.controller;
 
-import com.as.server.dto.accounts.SubAccountRequest;
+import com.as.server.api.subaccounts.SubAccountsApi;
 import com.as.server.dto.accounts.SubAccountDTO;
-import com.as.server.entity.SubAccount;
+import com.as.server.dto.accounts.SubAccountRequest;
 import com.as.server.entity.Account;
+import com.as.server.entity.SubAccount;
 import com.as.server.entity.User;
 import com.as.server.enums.CardType;
 import com.as.server.service.SubAccountService;
@@ -11,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,7 +26,7 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 
 @RestController
 @RequestMapping("/sub-accounts")
-public class SubAccountController {
+public class SubAccountController implements SubAccountsApi {
 
     private static final Logger log = LoggerFactory.getLogger(SubAccountController.class);
     private final SubAccountService subAccountService;
@@ -34,9 +35,10 @@ public class SubAccountController {
         this.subAccountService = subAccountService;
     }
 
+    @Override
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<SubAccountDTO> createSubAccount(@Valid @RequestBody SubAccountRequest request) {
+    public ResponseEntity<SubAccountDTO> subAccountsCreate(@Valid @RequestBody SubAccountRequest request) {
         log.debug("Received create sub-account request: {}", request);
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
@@ -47,9 +49,10 @@ public class SubAccountController {
         return ResponseEntity.status(201).contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<SubAccountDTO>> getSubAccounts() {
+    public ResponseEntity<List<SubAccountDTO>> subAccountsGet() {
         log.debug("Received get sub-accounts request");
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
@@ -63,14 +66,15 @@ public class SubAccountController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<SubAccountDTO> getSubAccount(@PathVariable Integer id) {
+    public ResponseEntity<SubAccountDTO> subAccountGet(@PathVariable Integer id) {
         log.debug("Received get sub-account request: id={}", id);
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
         SubAccount subAccount = subAccountService.findById(id);
-        if (!auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) &&
+        if (auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) &&
                 subAccount.getUsers().stream().noneMatch(u -> u.getUserId().equals(userId))) {
             log.warn("User {} attempted to access sub-account {} without permission", userId, id);
             throw new AccessDeniedException("Cannot access sub-account");
@@ -80,14 +84,15 @@ public class SubAccountController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<SubAccountDTO> updateSubAccount(@PathVariable Integer id, @Valid @RequestBody SubAccountRequest request) {
+    public ResponseEntity<SubAccountDTO> subAccountsUpdate(@PathVariable Integer id, @Valid @RequestBody SubAccountRequest request) {
         log.debug("Received update sub-account request: id={}, request={}", id, request);
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
         SubAccount existing = subAccountService.findById(id);
-        if (!auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) &&
+        if (auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) &&
                 existing.getUsers().stream().noneMatch(u -> u.getUserId().equals(userId))) {
             log.warn("User {} attempted to update sub-account {} without permission", userId, id);
             throw new AccessDeniedException("Cannot update sub-account");
@@ -100,14 +105,15 @@ public class SubAccountController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    @Override
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Void> deleteSubAccount(@PathVariable Integer id) {
+    public ResponseEntity<Void> subAccountsDelete(@PathVariable Integer id) {
         log.debug("Received delete sub-account request: id={}", id);
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
         SubAccount subAccount = subAccountService.findById(id);
-        if (!auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) &&
+        if (auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) &&
                 subAccount.getUsers().stream().noneMatch(u -> u.getUserId().equals(userId))) {
             log.warn("User {} attempted to delete sub-account {} without permission", userId, id);
             throw new AccessDeniedException("Cannot delete sub-account");

@@ -1,5 +1,6 @@
 package com.as.server.controller;
 
+import com.as.server.api.transactions.TransactionTypesApi;
 import com.as.server.dto.transactions.TransactionTypeDTO;
 import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.entity.TransactionType;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/transaction-types")
 @PreAuthorize("hasRole('ADMIN')")
-public class TransactionTypeController {
+public class TransactionTypeController implements TransactionTypesApi {
 
     @Autowired
     private TransactionTypeService transactionTypeService;
@@ -26,17 +27,19 @@ public class TransactionTypeController {
     @Autowired
     private EntityMapper entityMapper;
 
+    @Override
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TransactionTypeDTO> create(@Valid @RequestBody TransactionTypeRequest request) {
+    public ResponseEntity<TransactionTypeDTO> transactionTypesCreate(@Valid @RequestBody TransactionTypeRequest request) {
         TransactionType transactionType = entityMapper.toTransactionType(request);
         TransactionType created = transactionTypeService.create(transactionType);
         return ResponseEntity.status(201).body(entityMapper.toTransactionTypeDTO(created));
     }
 
+    @Override
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<TransactionTypeDTO>> list() {
+    public ResponseEntity<List<TransactionTypeDTO>> transactionTypesList() {
         List<TransactionType> types = transactionTypeService.findAll();
         List<TransactionTypeDTO> typeDTOs = types.stream()
                 .map(entityMapper::toTransactionTypeDTO)
@@ -44,17 +47,19 @@ public class TransactionTypeController {
         return ResponseEntity.ok(typeDTOs);
     }
 
+    @Override
     @PutMapping("/{typeId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TransactionTypeDTO> update(@PathVariable Integer typeId, @Valid @RequestBody TransactionTypeRequest request) {
+    public ResponseEntity<TransactionTypeDTO> transactionTypesUpdate(@PathVariable Integer typeId, @Valid @RequestBody TransactionTypeRequest request) {
         TransactionType transactionType = entityMapper.toTransactionType(request);
         TransactionType updated = transactionTypeService.update(typeId, transactionType);
         return ResponseEntity.ok(entityMapper.toTransactionTypeDTO(updated));
     }
 
+    @Override
     @DeleteMapping("/{typeId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Integer typeId) {
+    public ResponseEntity<Void> transactionTypesDelete(@PathVariable Integer typeId) {
         if (transactionTypeService.hasTransactions(typeId)) {
             throw new ConflictException("Transaction type has associated transactions");
         }

@@ -147,7 +147,7 @@ public interface AccountsApi {
         value = "/accounts",
         produces = { "application/json" }
     )
-    default ResponseEntity<List<Account>> accountsList(
+    default ResponseEntity<List<AccountDTO>> accountsList(
         
     ) {
         getRequest().ifPresent(request -> {
@@ -195,7 +195,7 @@ public interface AccountsApi {
         produces = { "application/json" },
         consumes = { "application/json" }
     )
-    default ResponseEntity<Account> accountsUpdate(
+    default ResponseEntity<AccountDTO> accountsUpdate(
         @Parameter(name = "accountId", description = "账户 ID", required = true, schema = @Schema(description = "")) @PathVariable("accountId") Integer accountId,
         @Parameter(name = "AccountRequest", description = "", schema = @Schema(description = "")) @Valid @RequestBody(required = false) AccountRequest accountRequest
     ) {
