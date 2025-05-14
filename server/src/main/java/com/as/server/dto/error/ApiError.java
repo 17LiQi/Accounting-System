@@ -1,15 +1,13 @@
 package com.as.server.dto.error;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import javax.validation.constraints.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-
 import javax.annotation.Generated;
+import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * ApiError
@@ -22,17 +20,23 @@ public class ApiError   {
    * Gets or Sets code
    */
   public enum CodeEnum {
-    PERMISSION_DENIED("PERMISSION_DENIED"),
+    PERMISSION_DENIED("PERMISSION_DENIED"), // 权限拒绝
     
-    DUPLICATE_ACCOUNT("DUPLICATE_ACCOUNT"),
+    DUPLICATE_ACCOUNT("DUPLICATE_ACCOUNT"), // 账户重复
     
-    INVALID_TRANSACTION("INVALID_TRANSACTION"),
+    INVALID_TRANSACTION("INVALID_TRANSACTION"),// 交易无效
     
-    DATA_NOT_FOUND("DATA_NOT_FOUND"),
+    DATA_NOT_FOUND("DATA_NOT_FOUND"), // 数据未找到
     
-    CONFLICT("CONFLICT"),
+    CONFLICT("CONFLICT"), // 冲突
+
+    INTERNAL_ERROR("INTERNAL_ERROR"), // 内部错误
+
+    INVALID_REQUEST("INVALID_REQUEST"), // 请求无效
+
+    VALIDATION_FAILED("VALIDATION_FAILED"), // 验证失败
     
-    INVALID_CREDENTIALS("INVALID_CREDENTIALS");
+    INVALID_CREDENTIALS("INVALID_CREDENTIALS"); // 凭证无效
 
     private String value;
 

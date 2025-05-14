@@ -3,6 +3,7 @@ package com.as.server.service.impl;
 import com.as.server.entity.Account;
 import com.as.server.exception.EntityNotFoundException;
 import com.as.server.repository.AccountRepository;
+import com.as.server.repository.AccountTypeRepository;
 import com.as.server.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +19,19 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
 
+    private final AccountTypeRepository accountTypeRepository;
+
     @Override
     @Transactional
     public Account create(Account account) {
         log.info("Creating account: {}", account.getAccountName());
+        if (account.getAccountType() == null || account.getAccountType().getTypeId() == null) {
+            throw new IllegalArgumentException("Account type is required");
+        }
+        // 检查typeId是否存在
+        if (!accountTypeRepository.existsById(account.getAccountType().getTypeId())) {
+            throw new IllegalArgumentException("Account type not found");
+        }
         return accountRepository.save(account);
     }
 

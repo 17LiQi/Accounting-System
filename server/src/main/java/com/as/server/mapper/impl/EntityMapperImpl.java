@@ -81,7 +81,7 @@ public class EntityMapperImpl implements EntityMapper {
 
         Account account = new Account();
 
-        account.setAccountName( request.getaccountName() );
+        account.setAccountName( request.getAccountName() );
         account.setAccountType( accountType( request.getTypeId(), accountTypeRepository ) );
 
         return account;
@@ -97,7 +97,7 @@ public class EntityMapperImpl implements EntityMapper {
 
         subAccountDTO.setSubAccountId( subAccount.getSubAccountId() );
         subAccountDTO.setAccountId( subAccountAccountAccountId( subAccount ) );
-        subAccountDTO.setaccountName( subAccount.getAccountName() );
+        subAccountDTO.setAccountName( subAccount.getAccountName() );
         subAccountDTO.setAccountNumber( subAccount.getAccountNumber() );
         subAccountDTO.setCardType( subAccount.getCardType() );
         subAccountDTO.setBalance( bigDecimalToString( subAccount.getBalance() ) );
@@ -114,7 +114,7 @@ public class EntityMapperImpl implements EntityMapper {
         SubAccount subAccount = new SubAccount();
 
         subAccount.setAccount( toAccount( request.getAccountId() ) );
-        subAccount.setAccountName( request.getaccountName() );
+        subAccount.setAccountName( request.getAccountName() );
         subAccount.setAccountNumber( request.getAccountNumber() );
         subAccount.setCardType( request.getCardType() );
         subAccount.setBalance( stringToBigDecimal( request.getBalance() ) );

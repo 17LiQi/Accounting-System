@@ -29,8 +29,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException e) {
         log.debug("IllegalArgumentException: {}", e.getMessage());
+        log.error("IllegalArgumentException: {}", e.getMessage(), e);
+        ApiError.CodeEnum code = e.getMessage().contains("not found") ? ApiError.CodeEnum.DATA_NOT_FOUND : ApiError.CodeEnum.INVALID_REQUEST;
         ApiError error = new ApiError()
-                .code(ApiError.CodeEnum.DATA_NOT_FOUND)
+                .code(code)
                 .message(e.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -65,10 +67,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException e) {
         log.debug("MethodArgumentNotValidException: {}", e.getMessage());
+        log.error("Validation failed: {}", e.getBindingResult().getAllErrors(), e);
         FieldError fieldError = e.getBindingResult().getFieldErrors().get(0);
         String message = String.format("Validation failed for request: %s %s", fieldError.getField(), fieldError.getDefaultMessage());
         ApiError error = new ApiError()
-                .code(ApiError.CodeEnum.DATA_NOT_FOUND)
+                .code(ApiError.CodeEnum.VALIDATION_FAILED)
                 .message(message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -79,7 +82,7 @@ public class GlobalExceptionHandler {
         String message = e.getCause() instanceof IllegalArgumentException ?
                 e.getCause().getMessage() : "Invalid value for parameter: " + e.getValue();
         ApiError error = new ApiError()
-                .code(ApiError.CodeEnum.DATA_NOT_FOUND)
+                .code(ApiError.CodeEnum.INVALID_REQUEST)
                 .message(message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -90,7 +93,7 @@ public class GlobalExceptionHandler {
         String message = e.getCause() instanceof IllegalArgumentException ?
                 e.getCause().getMessage() : "Invalid value for parameter " + e.getName() + ": " + e.getValue();
         ApiError error = new ApiError()
-                .code(ApiError.CodeEnum.DATA_NOT_FOUND)
+                .code(ApiError.CodeEnum.INVALID_REQUEST)
                 .message(message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -99,8 +102,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleNullPointerException(NullPointerException e) {
         log.debug("NullPointerException: {}", e.getMessage());
         ApiError error = new ApiError()
-                .code(ApiError.CodeEnum.DATA_NOT_FOUND)
+                .code(ApiError.CodeEnum.INTERNAL_ERROR) // 新增 INTERNAL_ERROR
                 .message("Unexpected null value: " + (e.getMessage() != null ? e.getMessage() : "Unknown"));
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

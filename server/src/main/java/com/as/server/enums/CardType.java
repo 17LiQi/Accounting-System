@@ -13,6 +13,10 @@ public enum CardType {
 
     CREDIT("CREDIT"),
 
+    VISA("VISA"),
+
+    MASTERCARD("MASTERCARD"),
+
     WALLET("WALLET");
 
     private final String value;

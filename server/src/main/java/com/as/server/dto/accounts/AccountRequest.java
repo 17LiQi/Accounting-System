@@ -37,11 +37,11 @@ public class AccountRequest {
   @NotNull
   @Size(max = 100)
   @Schema(name = "accountName", description = "账户名称", required = true)
-  public String getaccountName() {
+  public String getAccountName() {
     return accountName;
   }
 
-  public void setaccountName(String accountName) {
+  public void setAccountName(String accountName) {
     this.accountName = accountName;
   }
 

@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/users/**", "/accounts/**", "/sub-accounts/**", "/transaction-types/**").hasRole("ADMIN")
+                .antMatchers("/sub-accounts/**").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/transactions/**", "/statistics").hasAnyRole("ADMIN", "USER")
                 .anyRequest().authenticated()
                 .and()

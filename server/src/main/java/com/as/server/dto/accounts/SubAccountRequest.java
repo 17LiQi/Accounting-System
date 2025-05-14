@@ -62,11 +62,11 @@ public class SubAccountRequest   {
   */
   @NotNull @Size(max = 100) 
   @Schema(name = "accountName", required = true)
-  public String getaccountName() {
+  public String getAccountName() {
     return accountName;
   }
 
-  public void setaccountName(String accountName) {
+  public void setAccountName(String accountName) {
     this.accountName = accountName;
   }
 

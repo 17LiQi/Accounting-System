@@ -15,15 +15,20 @@ import com.as.server.repository.AccountTypeRepository;
 import org.mapstruct.Context;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 // @Mapper
 public interface EntityMapper {
+
+    Logger logger = LoggerFactory.getLogger(EntityMapper.class);
 
     @Mapping(target = "userId", source = "userId")
     @Mapping(target = "username", source = "username")
@@ -124,8 +129,17 @@ public interface EntityMapper {
 
     @Named("accountType")
     default AccountType accountType(Integer typeId, @Context AccountTypeRepository accountTypeRepository) {
-        return typeId != null ? accountTypeRepository.findById(typeId)
-                .orElseThrow(() -> new IllegalArgumentException("AccountType with id " + typeId + " not found")) : null;
+        if (typeId == null) {
+            logger.warn("Account type ID is null");
+            return null;
+        }
+        Optional<AccountType> accountTypeOptional = accountTypeRepository.findById(typeId);
+        if (accountTypeOptional.isPresent()) {
+            logger.debug("Found AccountType for typeId {}: {}", typeId, accountTypeOptional.get());
+        } else {
+            logger.debug("No AccountType found for typeId {}", typeId);
+        }
+        return accountTypeOptional.orElseThrow(() -> new IllegalArgumentException("AccountType with id " + typeId + " not found"));
     }
 
     @Named("toAccount")

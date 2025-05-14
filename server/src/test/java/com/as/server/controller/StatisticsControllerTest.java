@@ -128,7 +128,7 @@ public class StatisticsControllerTest {
                         .param("year", "2025"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value("DATA_NOT_FOUND"))
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.message").value("Invalid period value: invalid"));
     }
 
@@ -213,7 +213,7 @@ public class StatisticsControllerTest {
                         .param("year", "2025"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value("DATA_NOT_FOUND"))
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.message").value("Week is required for weekly period"));
     }
 
@@ -226,7 +226,7 @@ public class StatisticsControllerTest {
                         .param("month", "5"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code").value("DATA_NOT_FOUND"))
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.message").value("Month and day are required for daily period"));
     }
 }

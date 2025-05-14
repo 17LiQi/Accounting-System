@@ -4,11 +4,13 @@ import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
 import com.as.server.entity.Account;
 import com.as.server.enums.AccountType;
-import com.as.server.mapper.EntityMapper;
 import com.as.server.repository.AccountTypeRepository;
 import com.as.server.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,8 +25,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class AccountControllerTest {
 
+    private static final Logger log = LoggerFactory.getLogger(AccountControllerTest.class);
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -40,19 +43,21 @@ public class AccountControllerTest {
     private AccountService accountService;
 
     @MockBean
-    private EntityMapper entityMapper;
-
-    @MockBean
     private AccountTypeRepository accountTypeRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @BeforeEach
+    void setUp() {
+        reset(accountService); // 重置 mock
+    }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     void createAccount_success() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setaccountName("Test Account");
+        request.setAccountName("Test Account");
         request.setTypeId(1);
         request.setType(AccountType.BANK);
 
@@ -72,9 +77,7 @@ public class AccountControllerTest {
         accountDTO.setType(AccountDTO.TypeEnum.BANK);
 
         when(accountTypeRepository.findById(1)).thenReturn(Optional.of(accountType));
-        when(entityMapper.toAccount(any(AccountRequest.class), eq(accountTypeRepository))).thenReturn(account);
         when(accountService.create(any(Account.class))).thenReturn(account);
-        when(entityMapper.toAccountDTO(any(Account.class))).thenReturn(accountDTO);
 
         mockMvc.perform(post("/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,18 +93,23 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void createAccount_invalidTypeId_throwsBadRequest() throws Exception {
+        log.debug("Setting up createAccount_invalidTypeId_throwsBadRequest");
         AccountRequest request = new AccountRequest();
-        request.setaccountName("Test Account");
+        request.setAccountName("Test Account");
         request.setTypeId(999);
-        // 故意不设置 type，触发 @NotNull 验证错误
-
+        request.setType(AccountType.BANK);
+        when(accountTypeRepository.findById(999)).thenReturn(Optional.empty());
+        String json = objectMapper.writeValueAsString(request);
+        log.debug("Request JSON: {}", json);
         mockMvc.perform(post("/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(json))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.code").value("DATA_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("Validation failed for request: type must not be null"));
+                .andExpect(jsonPath("$.message").value("AccountType with id 999 not found"));
+        verify(accountTypeRepository, times(1)).findById(999);
+        verify(accountService, never()).create(any(Account.class));
     }
 
     @Test
@@ -123,7 +131,6 @@ public class AccountControllerTest {
 
         List<Account> accounts = Collections.singletonList(account);
         when(accountService.findAll()).thenReturn(accounts);
-        when(entityMapper.toAccountDTO(any(Account.class))).thenReturn(accountDTO);
 
         mockMvc.perform(get("/accounts"))
                 .andExpect(status().isOk())
@@ -138,7 +145,7 @@ public class AccountControllerTest {
     @WithMockUser(roles = "ADMIN")
     void updateAccount_success() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setaccountName("Updated Account");
+        request.setAccountName("Updated Account");
         request.setTypeId(1);
         request.setType(AccountType.BANK);
 
@@ -158,9 +165,7 @@ public class AccountControllerTest {
         accountDTO.setType(AccountDTO.TypeEnum.BANK);
 
         when(accountTypeRepository.findById(1)).thenReturn(Optional.of(accountType));
-        when(entityMapper.toAccount(any(AccountRequest.class), eq(accountTypeRepository))).thenReturn(account);
         when(accountService.update(eq(1), any(Account.class))).thenReturn(account);
-        when(entityMapper.toAccountDTO(any(Account.class))).thenReturn(accountDTO);
 
         mockMvc.perform(put("/accounts/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -198,7 +203,7 @@ public class AccountControllerTest {
     @Test
     void createAccount_accessDenied_throwsForbidden() throws Exception {
         AccountRequest request = new AccountRequest();
-        request.setaccountName("Test Account");
+        request.setAccountName("Test Account");
         request.setTypeId(1);
         request.setType(AccountType.BANK);
 

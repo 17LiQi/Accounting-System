@@ -90,3 +90,5 @@ private final String value;
 - 考虑为其他枚举类规范化
 - 考虑提取[AccountDTO.java](src/main/java/com/as/server/dto/accounts/AccountDTO.java)中的枚举
 - 提取CardType注解,统一放在enums中,导入CardType枚举类到DTO和request中统一管理
+
+# @Valid 和 @Pattern 验证未触发，导致请求进入控制器逻辑

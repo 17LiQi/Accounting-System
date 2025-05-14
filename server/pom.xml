@@ -21,6 +21,7 @@
     </parent>
 
     <dependencies>
+
         <!-- Spring Boot Starter Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
