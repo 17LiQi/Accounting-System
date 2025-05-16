@@ -1,0 +1,9 @@
+generatorName: typescript-axios
+outputDir: ./src/api
+inputSpec: ../server/src/main/resources/openapi/family_accounting_openapi.yaml
+additionalProperties:
+  withSeparateModelsAndApi: true
+  apiPackage: apis
+  modelPackage: models
+  useAxios: true
+  basePath: http://localhost:8080
