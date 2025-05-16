@@ -31,7 +31,7 @@ public class TransactionTypeRequest {
      */
     @NotNull
     @Size(max = 50)
-    @Schema(name = "typeName", description = "交易类型名称", required = true)
+    @Schema(name = "typeName", description = "交易类型名称")
     public String getTypeName() {
         return typeName;
     }
@@ -46,7 +46,7 @@ public class TransactionTypeRequest {
      * @return isIncome
      */
     @NotNull
-    @Schema(name = "isIncome", description = "是否为收入，TRUE 为收入，FALSE 为支出", required = true)
+    @Schema(name = "isIncome", description = "是否为收入，TRUE 为收入，FALSE 为支出")
     public Boolean getIsIncome() {
         return isIncome;
     }

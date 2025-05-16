@@ -1,7 +1,6 @@
 package com.as.server.config;
 
 import com.as.server.exception.CustomAccessDeniedHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -18,11 +17,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final ObjectMapper objectMapper;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(ObjectMapper objectMapper, CustomAccessDeniedHandler accessDeniedHandler) {
-        this.objectMapper = objectMapper;
+    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler) {
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
@@ -34,6 +31,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .antMatchers("/login").permitAll()
+                .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .antMatchers("/users/**", "/accounts/**", "/sub-accounts/**", "/transaction-types/**").hasRole("ADMIN")
                 .antMatchers("/sub-accounts/**").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/transactions/**", "/statistics").hasAnyRole("ADMIN", "USER")
@@ -45,7 +43,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

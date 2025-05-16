@@ -1,5 +1,6 @@
 package com.as.server.service.impl;
 
+import com.as.server.controller.StatisticsController;
 import com.as.server.dto.statistics.StatisticsResponse;
 import com.as.server.dto.statistics.StatisticsResponseExpenseByType;
 import com.as.server.dto.statistics.StatisticsResponseIncomeByType;
@@ -27,15 +28,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         if (period == null || year == null) {
             throw new IllegalArgumentException("Period and year are required");
         }
-        if (period == Period.MONTHLY && month == null) {
-            throw new IllegalArgumentException("Month is required for monthly period");
-        }
-        if (period == Period.WEEKLY && week == null) {
-            throw new IllegalArgumentException("Week is required for weekly period");
-        }
-        if (period == Period.DAILY && (month == null || day == null)) {
-            throw new IllegalArgumentException("Month and day are required for daily period");
-        }
+        StatisticsController.validatePeriodParams(month, week, day, period);
 
         StatisticsResponse response = new StatisticsResponse();
         response.setPeriod(period);

@@ -45,17 +45,11 @@ public class SubAccount {
             joinColumns = @JoinColumn(name = "sub_account_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> users = new HashSet<User>();
+    private Set<User> users = new HashSet<>();
 
     public void addUser(User user) {
         if (user != null) {
             users.add(user);
-        }
-    }
-
-    public void removeUser(User user) {
-        if (user != null) {
-            users.remove(user);
         }
     }
 

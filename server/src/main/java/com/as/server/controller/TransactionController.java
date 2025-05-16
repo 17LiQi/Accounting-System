@@ -12,7 +12,6 @@ import com.as.server.mapper.EntityMapper;
 import com.as.server.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -38,13 +37,14 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 @RequestMapping("/transactions")
 public class TransactionController implements TransactionsApi {
 
-    @Autowired
-    private EntityMapper entityMapper;
+    private final EntityMapper entityMapper;
 
     private static final Logger log = LoggerFactory.getLogger(TransactionController.class);
+
     private final TransactionService transactionService;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(EntityMapper entityMapper, TransactionService transactionService) {
+        this.entityMapper = entityMapper;
         this.transactionService = transactionService;
     }
 
@@ -87,8 +87,8 @@ public class TransactionController implements TransactionsApi {
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer authenticatedUserId = Integer.parseInt(authentication.getName());
-        if (userId != null && !userId.equals(authenticatedUserId) && !authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+        if (userId != null && !userId.equals(authenticatedUserId) && authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             log.warn("User {} attempted to access transactions of user {}", authenticatedUserId, userId);
             throw new AccessDeniedException("Cannot access other user's transactions");
         }

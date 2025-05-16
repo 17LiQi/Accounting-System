@@ -2,7 +2,6 @@ package com.as.server.service.impl;
 
 import com.as.server.entity.User;
 import com.as.server.exception.EntityNotFoundException;
-import com.as.server.repository.SubAccountRepository;
 import com.as.server.repository.TransactionRepository;
 import com.as.server.repository.UserRepository;
 import com.as.server.service.UserService;
@@ -19,8 +18,6 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
-    private final SubAccountRepository subAccountRepository;
 
     private final TransactionRepository transactionRepository;
 
@@ -79,10 +76,4 @@ public class UserServiceImpl implements UserService {
         return transactionRepository.existsByUserUserId(userId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public boolean hasAssociatedData(Integer userId) {
-        return !subAccountRepository.findSubAccountsByUserId(userId).isEmpty() ||
-                transactionRepository.existsByUserUserId(userId);
-    }
 }

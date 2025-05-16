@@ -7,7 +7,6 @@ import com.as.server.entity.TransactionType;
 import com.as.server.exception.ConflictException;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.service.TransactionTypeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +20,14 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('ADMIN')")
 public class TransactionTypeController implements TransactionTypesApi {
 
-    @Autowired
-    private TransactionTypeService transactionTypeService;
+    private final TransactionTypeService transactionTypeService;
 
-    @Autowired
-    private EntityMapper entityMapper;
+    private final EntityMapper entityMapper;
+
+    public TransactionTypeController(TransactionTypeService transactionTypeService, EntityMapper entityMapper) {
+        this.transactionTypeService = transactionTypeService;
+        this.entityMapper = entityMapper;
+    }
 
     @Override
     @PostMapping

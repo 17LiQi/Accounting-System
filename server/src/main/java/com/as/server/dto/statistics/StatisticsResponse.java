@@ -114,7 +114,7 @@ public class StatisticsResponse {
    */
   @Min(1)
   @Max(53)
-  @Schema(name = "week", description = "周次（周度统计时需要）", required = false)
+  @Schema(name = "week", description = "周次（周度统计时需要）")
   public Integer getWeek() {
     return week;
   }
@@ -132,7 +132,7 @@ public class StatisticsResponse {
    */
   @Min(1)
   @Max(31)
-  @Schema(name = "day", description = "日期（日度统计时需要）", required = false)
+  @Schema(name = "day", description = "日期（日度统计时需要）")
   public Integer getDay() {
     return day;
   }
@@ -155,7 +155,7 @@ public class StatisticsResponse {
    * @return incomeByType
    */
   @Valid
-  @Schema(name = "incomeByType", description = "按类型统计的收入", required = false)
+  @Schema(name = "incomeByType", description = "按类型统计的收入")
   public List<StatisticsResponseIncomeByType> getIncomeByType() {
     return incomeByType;
   }
@@ -178,7 +178,7 @@ public class StatisticsResponse {
    * @return expenseByType
    */
   @Valid
-  @Schema(name = "expenseByType", description = "按类型统计的支出", required = false)
+  @Schema(name = "expenseByType", description = "按类型统计的支出")
   public List<StatisticsResponseExpenseByType> getExpenseByType() {
     return expenseByType;
   }

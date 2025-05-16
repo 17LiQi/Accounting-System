@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,24 +26,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     Page<Transaction> findBySubAccountSubAccountId(Integer subAccountId, Pageable pageable);
 
     Page<Transaction> findByUserUserIdAndSubAccountSubAccountId(Integer userId, Integer subAccountId, Pageable pageable);
-
-    @Query("SELECT t.transactionType.typeId, t.transactionType.typeName, SUM(t.amount) " +
-            "FROM Transaction t WHERE t.transactionType.isIncome = true AND t.time BETWEEN :start AND :end " +
-            "AND (:userId IS NULL OR t.user.userId = :userId) " +
-            "AND (:accountId IS NULL OR t.subAccount.account.accountId = :accountId) " +
-            "AND (:subAccountId IS NULL OR t.subAccount.subAccountId = :subAccountId) " +
-            "GROUP BY t.transactionType.typeId, t.transactionType.typeName")
-    List<Object[]> findIncomeByType(Integer userId, Integer accountId, Integer subAccountId,
-                                    LocalDateTime start, LocalDateTime end);
-
-    @Query("SELECT t.transactionType.typeId, t.transactionType.typeName, SUM(t.amount) " +
-            "FROM Transaction t WHERE t.transactionType.isIncome = false AND t.time BETWEEN :start AND :end " +
-            "AND (:userId IS NULL OR t.user.userId = :userId) " +
-            "AND (:accountId IS NULL OR t.subAccount.account.accountId = :accountId) " +
-            "AND (:subAccountId IS NULL OR t.subAccount.subAccountId = :subAccountId) " +
-            "GROUP BY t.transactionType.typeId, t.transactionType.typeName")
-    List<Object[]> findExpenseByType(Integer userId, Integer accountId, Integer subAccountId,
-                                     LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT SUM(t.amount) FROM Transaction t " +
             "WHERE t.transactionType.isIncome = :isIncome " +

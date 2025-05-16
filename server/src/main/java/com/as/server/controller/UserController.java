@@ -7,7 +7,6 @@ import com.as.server.entity.User;
 import com.as.server.exception.ConflictException;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,14 +20,17 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController implements UsersApi {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private EntityMapper entityMapper;
+    private final EntityMapper entityMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserController(UserService userService, EntityMapper entityMapper, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.entityMapper = entityMapper;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     @PostMapping

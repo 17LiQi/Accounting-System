@@ -51,18 +51,10 @@ public class StatisticsController implements StatisticsApi {
             throw new IllegalArgumentException("Invalid period value: " + period, e);
         }
 
-        if (periodEnum == null || year == null) {
+        if (year == null) {
             throw new IllegalArgumentException("Period and year are required");
         }
-        if (periodEnum == Period.MONTHLY && month == null) {
-            throw new IllegalArgumentException("Month is required for monthly period");
-        }
-        if (periodEnum == Period.WEEKLY && week == null) {
-            throw new IllegalArgumentException("Week is required for weekly period");
-        }
-        if (periodEnum == Period.DAILY && (month == null || day == null)) {
-            throw new IllegalArgumentException("Month and day are required for daily period");
-        }
+        validatePeriodParams(month, week, day, periodEnum);
 
         Authentication auth = getContext().getAuthentication();
         Integer effectiveUserId = userId;
@@ -82,5 +74,17 @@ public class StatisticsController implements StatisticsApi {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
+    }
+
+    public static void validatePeriodParams(@RequestParam(required = false) Integer month, @RequestParam(required = false) Integer week, @RequestParam(required = false) Integer day, Period periodEnum) {
+        if (periodEnum == Period.MONTHLY && month == null) {
+            throw new IllegalArgumentException("Month is required for monthly period");
+        }
+        if (periodEnum == Period.WEEKLY && week == null) {
+            throw new IllegalArgumentException("Week is required for weekly period");
+        }
+        if (periodEnum == Period.DAILY && (month == null || day == null)) {
+            throw new IllegalArgumentException("Month and day are required for daily period");
+        }
     }
 }

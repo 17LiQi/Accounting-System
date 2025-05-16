@@ -11,8 +11,6 @@ public interface UserService {
     User update(Integer id, User user);
     void delete(Integer id);
 
-    boolean hasAssociatedData(Integer userId);
-
     User findByUsername(String username);
 
     boolean hasTransactions(Integer userId);

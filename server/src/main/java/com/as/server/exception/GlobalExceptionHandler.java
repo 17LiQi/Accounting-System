@@ -81,7 +81,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<ApiError> handleInvalidFormatException(InvalidFormatException e) {
-        log.debug("InvalidFormatException: value={}, cause={}", e.getValue(), e.getCause());
         String message = e.getCause() instanceof IllegalArgumentException ?
                 e.getCause().getMessage() : "Invalid value for parameter: " + e.getValue();
         ApiError error = new ApiError()
