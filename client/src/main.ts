@@ -1,14 +1,11 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import App from './App.vue';
+import router from './router';
 
 const app = createApp(App);
-if (import.meta.env.VITE_MOCK_ENABLED === 'true') {
-    import('@/mocks/browser').then(({ worker }) => worker.start());
-}
-app.mount('#app');
 
-import router from './router';
+app.use(createPinia());
 app.use(router);
 
-import { pinia } from './store';
-app.use(pinia);
+app.mount('#app');

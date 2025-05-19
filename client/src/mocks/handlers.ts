@@ -1,23 +1,55 @@
+// src/mocks/handlers.ts
 import { rest } from 'msw';
-import { Account } from '@/models/accounts/account';
+import type { Account, AccountRequest } from '@/models/accounts';
+
+const baseUrl = '/api/accounts';
+
 export const handlers = [
-    rest.get(`${import.meta.env.VITE_API_BASE_URL}/accounts`, (req, res, ctx) => {
+    rest.get(baseUrl, (_req, res, ctx) => {
         const accounts: Account[] = [
-            { id: '1', name: 'Account 1', balance: 100 },
-            { id: '2', name: 'Account 2', balance: 200 },
+            {
+                accountId: 1,
+                accountName: '银行账户',
+                accountType: { typeId: 1, typeName: 'BANK' },
+                balance: 1000
+            },
+            {
+                accountId: 2,
+                accountName: '微信账户',
+                accountType: { typeId: 2, typeName: 'WECHAT' },
+                balance: 500
+            }
         ];
         return res(ctx.json(accounts));
     }),
-    rest.get(`${import.meta.env.VITE_API_BASE_URL}/accounts/:id`, (req, res, ctx) => {
-        const account: Account = { id: req.params.id as string, name: 'Mock Account', balance: 100 };
+    rest.post(baseUrl, async (req, res, ctx) => {
+        const requestBody = await req.json() as AccountRequest;
+        const account: Account = {
+            accountId: 3,
+            accountName: requestBody.accountName,
+            accountType: { typeId: requestBody.typeId, typeName: requestBody.type },
+            balance: 0
+        };
         return res(ctx.json(account));
     }),
+    rest.get(`${baseUrl}/:id`, (req, res, ctx) => {
+        const { id } = req.params;
+        return res(ctx.json({
+            accountId: Number(id),
+            accountName: '测试账户',
+            accountType: { typeId: 1, typeName: 'BANK' },
+            balance: 1000
+        }));
+    }),
+    rest.get(`${baseUrl}/:id/transactions`, (_req, res, ctx) => {
+        return res(ctx.json([
+            {
+                id: '1',
+                date: '2024-01-01',
+                type: '收入',
+                amount: 1000,
+                description: '工资'
+            }
+        ]));
+    })
 ];
-
-rest.get(`${import.meta.env.VITE_API_BASE_URL}/accounts`, (req, res, ctx) => {
-    const accounts: Account[] = [
-        { id: '1', name: 'Account 1', balance: 100 },
-        { id: '2', name: 'Account 2', balance: 200 },
-    ];
-    return res(ctx.json(accounts));
-});

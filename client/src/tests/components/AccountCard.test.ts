@@ -1,10 +1,16 @@
+// tests/components/AccountCard.test.ts
 import { mount } from '@vue/test-utils';
 import AccountCard from '@/components/business/AccountCard.vue';
 describe('AccountCard', () => {
-    it('renders account name and balance', () => {
-        const account = { id: '1', name: 'Test', balance: 100 };
+    it('渲染账户名称和类型', () => {
+        const account = {
+            accountId: 1,
+            accountName: '银行账户',
+            accountType: { typeId: 1, typeName: 'BANK' },
+            balance: 1000
+        };
         const wrapper = mount(AccountCard, { props: { account } });
-        expect(wrapper.text()).toContain('Test');
-        expect(wrapper.text()).toContain('100');
+        expect(wrapper.text()).toContain('银行账户');
+        expect(wrapper.text()).toContain('BANK');
     });
 });

@@ -1,3 +1,4 @@
+// src/api/models/index.ts
 export * from './accounts/account';
 export * from './accounts/account-request';
 export * from './accounts/account-type';
