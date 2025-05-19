@@ -1,28 +1,44 @@
 // src/mocks/handlers.ts
 import { rest } from 'msw';
 import type { Account, AccountRequest } from '@/models/accounts';
+import { mockAuthApi } from './auth';
 
-const baseUrl = '/api/accounts';
+const baseURL = '/api';
 
 export const handlers = [
-    rest.get(baseUrl, (_req, res, ctx) => {
+    // 登录接口模拟
+    rest.post(`${baseURL}/login`, async (req, res, ctx) => {
+        try {
+            const body = await req.json();
+            const response = await mockAuthApi.login(body);
+            return res(ctx.status(response.status), ctx.json(response.data));
+        } catch (error: any) {
+            return res(
+                ctx.status(error.status || 500),
+                ctx.json(error.data || { message: '服务器错误' })
+            );
+        }
+    }),
+
+    // 账户列表接口模拟
+    rest.get(`${baseURL}/accounts`, (_req, res, ctx) => {
         const accounts: Account[] = [
             {
                 accountId: 1,
-                accountName: '银行账户',
+                accountName: '工商银行',
                 accountType: { typeId: 1, typeName: 'BANK' },
-                balance: 1000
+                balance: 10000
             },
             {
                 accountId: 2,
-                accountName: '微信账户',
+                accountName: '微信钱包',
                 accountType: { typeId: 2, typeName: 'WECHAT' },
-                balance: 500
+                balance: 5000
             }
         ];
         return res(ctx.json(accounts));
     }),
-    rest.post(baseUrl, async (req, res, ctx) => {
+    rest.post(`${baseURL}/accounts`, async (req, res, ctx) => {
         const requestBody = await req.json() as AccountRequest;
         const account: Account = {
             accountId: 3,
@@ -32,7 +48,7 @@ export const handlers = [
         };
         return res(ctx.json(account));
     }),
-    rest.get(`${baseUrl}/:id`, (req, res, ctx) => {
+    rest.get(`${baseURL}/accounts/:id`, (req, res, ctx) => {
         const { id } = req.params;
         return res(ctx.json({
             accountId: Number(id),
@@ -41,7 +57,7 @@ export const handlers = [
             balance: 1000
         }));
     }),
-    rest.get(`${baseUrl}/:id/transactions`, (_req, res, ctx) => {
+    rest.get(`${baseURL}/accounts/:id/transactions`, (_req, res, ctx) => {
         return res(ctx.json([
             {
                 id: '1',

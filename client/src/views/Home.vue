@@ -1,36 +1,38 @@
 <script setup lang="ts">
-// 组件逻辑
+// 首页组件逻辑
 </script>
 
 <template>
-  <div class="home">
-    <h1>欢迎使用会计系统</h1>
-    <nav>
-      <router-link to="/accounts">查看账户列表</router-link>
-    </nav>
+  <div class="home-container">
+    <h1>欢迎使用家庭记账系统</h1>
+    <div class="menu">
+      <router-link to="/accounts" class="menu-item">
+        账户管理
+      </router-link>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.home {
-  padding: 2rem;
-  text-align: center;
+.home-container {
+  padding: 20px;
 }
 
-h1 {
-  margin-bottom: 2rem;
+.menu {
+  margin-top: 20px;
 }
 
-nav {
-  margin-top: 2rem;
-}
-
-a {
-  color: #42b983;
+.menu-item {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
   text-decoration: none;
+  border-radius: 4px;
+  margin-right: 10px;
 }
 
-a:hover {
-  text-decoration: underline;
+.menu-item:hover {
+  background-color: #45a049;
 }
 </style>

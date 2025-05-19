@@ -1,26 +1,42 @@
 // vite.config.ts
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+import path from 'path';
 
 export default defineConfig({
   plugins: [vue()],
-  server: {
-    port: 3000,
-  },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@/models/accounts': resolve(__dirname, 'src/models/accounts/index.ts'),
-      '@/api/services': resolve(__dirname, 'src/api/services'),
-      '@/views': resolve(__dirname, 'src/views'),
-      '@/components': resolve(__dirname, 'src/components'),
-    },
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  server: {
+    port: 5173,
+    host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+          });
+        },
+      }
+    }
   },
   envDir: '.',
   build: {
+    sourcemap: false,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: path.resolve(__dirname, './src/index.ts'),
       name: 'AccountingSystem',
       fileName: (format) => `accounting-system.${format}.js`,
     },
