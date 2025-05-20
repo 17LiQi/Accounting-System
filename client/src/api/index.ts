@@ -17,5 +17,11 @@ export * from "./api";
 export * from "./configuration";
 export * from "./models";
 
-export * from './services';
+
+export * from './services/auth';
+export * from './services/transactions';
+export * from './services/transactionTypes';
+export * from './services/users';
+export * from './services/subAccounts';
+export * from './services/statistics';
 

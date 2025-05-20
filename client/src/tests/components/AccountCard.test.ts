@@ -6,7 +6,7 @@ describe('AccountCard', () => {
         const account = {
             accountId: 1,
             accountName: '银行账户',
-            accountType: { typeId: 1, typeName: 'BANK' },
+            accountType: 'BANK',
             balance: 1000
         };
         const wrapper = mount(AccountCard, { props: { account } });

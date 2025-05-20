@@ -1,18 +1,41 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import LoginForm from '@/components/auth/LoginForm.vue';
 import { authService } from '@/api/services/auth';
 
-jest.mock('@/api/services/auth');
-jest.mock('vue-router', () => ({
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    })
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock
+});
+
+vi.mock('@/api/services/auth');
+vi.mock('vue-router', () => ({
   useRouter: () => ({
-    push: jest.fn()
+    push: vi.fn()
   })
 }));
 
 describe('LoginForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it('应该正确渲染登录表单', () => {
@@ -34,14 +57,14 @@ describe('LoginForm', () => {
     const wrapper = mount(LoginForm);
     
     await wrapper.find('input[type="text"]').setValue('admin');
-    await wrapper.find('input[type="password"]').setValue('password');
+    await wrapper.find('input[type="password"]').setValue('admin123');
     await wrapper.find('form').trigger('submit');
     
     await nextTick();
     
     expect(authService.login).toHaveBeenCalledWith({
       username: 'admin',
-      password: 'password'
+      password: 'admin123'
     });
     expect(localStorage.getItem('token')).toBe('test-token');
     expect(localStorage.getItem('userRole')).toBe('ADMIN');

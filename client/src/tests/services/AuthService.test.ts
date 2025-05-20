@@ -1,6 +1,29 @@
 import { authService } from '@/api/services/auth';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
+import { vi } from 'vitest';
+
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    })
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true
+});
 
 // 使用与client.ts相同的baseURL
 const baseURL = 'http://localhost:3000/api';
@@ -9,7 +32,7 @@ const server = setupServer(
   rest.post(`${baseURL}/login`, async (req, res, ctx) => {
     const { username, password } = await req.json();
     
-    if (username === 'admin' && password === 'password') {
+    if (username === 'admin' && password === 'admin123') {
       return res(
         ctx.status(200),
         ctx.json({
@@ -43,10 +66,15 @@ afterAll(() => {
 });
 
 describe('AuthService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
   it('登录成功时应该返回token和角色', async () => {
     const response = await authService.login({
       username: 'admin',
-      password: 'password'
+      password: 'admin123'
     });
     
     expect(response.token).toBe('test-token');

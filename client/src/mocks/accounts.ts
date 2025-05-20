@@ -1,105 +1,137 @@
-import type { Account } from '@/api/models/accounts/account';
-import type { AccountType } from '@/api/models/accounts/account-type';
-import type { AccountRequest, AccountRequestTypeEnum } from '@/api/models/accounts/account-request';
+import { vi } from 'vitest';
+import type { AxiosResponse } from 'axios';
+import type { AccountDTO, AccountRequest } from '@/api/models/accounts';
+import type { AccountTypeDTO } from '@/api/models/accountTypes';
+import { AccountRequestTypeEnum } from '@/api/models/accounts/account-request';
 
-// 模拟账户数据
-const mockAccounts: Account[] = [
-  {
-    accountId: 1,
-    accountName: '现金账户',
-    accountType: {
-      typeId: 1,
-      typeName: '现金'
-    },
-    subAccounts: []
-  },
-  {
-    accountId: 2,
-    accountName: '银行账户',
-    accountType: {
-      typeId: 2,
-      typeName: '银行'
-    },
-    subAccounts: []
-  }
-];
-
-// 模拟API响应
 export const mockAccountsApi = {
-  // 获取账户列表
-  list: () => {
+  getAccounts: vi.fn().mockImplementation((): Promise<AxiosResponse<AccountDTO[]>> => {
     return Promise.resolve({
-      data: mockAccounts,
+      data: [
+        {
+          accountId: 1,
+          accountName: '工商银行',
+          accountType: 'BANK',
+          balance: 10000,
+          description: '工商银行账户'
+        },
+        {
+          accountId: 2,
+          accountName: '建设银行',
+          accountType: 'BANK',
+          balance: 20000,
+          description: '建设银行账户'
+        }
+      ],
       status: 200,
-      statusText: 'OK'
+      statusText: 'OK',
+      headers: {},
+      config: {} as any
     });
-  },
+  }),
 
-  // 创建账户
-  create: (request: AccountRequest) => {
-    const newAccount: Account = {
-      accountId: mockAccounts.length + 1,
-      accountName: request.accountName,
-      accountType: {
-        typeId: request.typeId,
-        typeName: request.type
+  getAccount: vi.fn().mockImplementation((id: number): Promise<AxiosResponse<AccountDTO>> => {
+    return Promise.resolve({
+      data: {
+        accountId: id,
+        accountName: '工商银行',
+        accountType: 'BANK',
+        balance: 10000,
+        description: '工商银行账户'
       },
-      subAccounts: []
-    };
-    mockAccounts.push(newAccount);
-    return Promise.resolve({
-      data: newAccount,
-      status: 201,
-      statusText: 'Created'
-    });
-  },
-
-  // 更新账户
-  update: (id: string, request: AccountRequest) => {
-    const accountId = parseInt(id);
-    const index = mockAccounts.findIndex(acc => acc.accountId === accountId);
-    if (index === -1) {
-      return Promise.reject({
-        status: 404,
-        statusText: 'Not Found',
-        data: { message: '账户不存在' }
-      });
-    }
-
-    const updatedAccount = {
-      ...mockAccounts[index],
-      accountName: request.accountName,
-      accountType: {
-        typeId: request.typeId,
-        typeName: request.type
-      }
-    };
-    mockAccounts[index] = updatedAccount;
-
-    return Promise.resolve({
-      data: updatedAccount,
       status: 200,
-      statusText: 'OK'
+      statusText: 'OK',
+      headers: {},
+      config: {} as any
     });
-  },
+  }),
 
-  // 删除账户
-  delete: (id: string) => {
-    const accountId = parseInt(id);
-    const index = mockAccounts.findIndex(acc => acc.accountId === accountId);
-    if (index === -1) {
-      return Promise.reject({
-        status: 404,
-        statusText: 'Not Found',
-        data: { message: '账户不存在' }
-      });
-    }
+  createAccount: vi.fn().mockImplementation((request: AccountRequest): Promise<AxiosResponse<AccountDTO>> => {
+    return Promise.resolve({
+      data: {
+        accountId: 3,
+        accountName: request.accountName,
+        accountType: request.type,
+        balance: 0,
+        description: ''
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any
+    });
+  }),
 
-    mockAccounts.splice(index, 1);
+  updateAccount: vi.fn().mockImplementation((id: number, request: AccountRequest): Promise<AxiosResponse<AccountDTO>> => {
+    return Promise.resolve({
+      data: {
+        accountId: id,
+        accountName: request.accountName,
+        accountType: request.type,
+        balance: 0,
+        description: ''
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any
+    });
+  }),
+
+  deleteAccount: vi.fn().mockImplementation((): Promise<AxiosResponse<null>> => {
     return Promise.resolve({
       data: null,
       status: 204,
-      statusText: 'No Content'
+      statusText: 'No Content',
+      headers: {},
+      config: {} as any
     });
+  })
+};
+
+export const mockAccounts: AccountDTO[] = [
+  {
+    accountId: 1,
+    accountName: '工商银行',
+    accountType: AccountRequestTypeEnum.Bank,
+    description: '工资卡',
+    balance: 10000
+  },
+  {
+    accountId: 2,
+    accountName: '微信钱包',
+    accountType: AccountRequestTypeEnum.Wechat,
+    description: '日常消费',
+    balance: 5000
+  },
+  {
+    accountId: 3,
+    accountName: '支付宝',
+    accountType: AccountRequestTypeEnum.Alipay,
+    description: '网购专用',
+    balance: 3000
   }
-}; 
+];
+
+export const mockAccountTypes: AccountTypeDTO[] = [
+  {
+    typeId: 1,
+    typeName: AccountRequestTypeEnum.Bank,
+    description: '银行账户'
+  },
+  {
+    typeId: 2,
+    typeName: AccountRequestTypeEnum.Wechat,
+    description: '微信钱包'
+  },
+  {
+    typeId: 3,
+    typeName: AccountRequestTypeEnum.Alipay,
+    description: '支付宝'
+  },
+  {
+    typeId: 4,
+    typeName: AccountRequestTypeEnum.Other,
+    description: '其他'
+  }
+]; 

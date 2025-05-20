@@ -3,8 +3,8 @@
   <div class="account-card">
     <div class="account-info">
       <h3>{{ account.accountName }}</h3>
-      <p class="type">类型：{{ account.accountType?.typeName || '未知' }}</p>
-      <p class="sub-accounts">子账户数量：{{ account.subAccounts?.length || 0 }}</p>
+      <p class="type">类型：{{ account.accountType }}</p>
+      <p class="balance">余额：{{ account.balance }}</p>
     </div>
     <div class="account-actions">
       <button @click="$emit('edit', account)">编辑</button>
@@ -14,14 +14,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Account } from '@/api/models/accounts/account';
+import type { AccountDTO } from '@/api/models/accounts';
 
 const props = defineProps<{
-  account: Account;
+  account: AccountDTO;
 }>();
 
 const emit = defineEmits<{
-  (e: 'edit', account: Account): void;
+  (e: 'edit', account: AccountDTO): void;
   (e: 'delete', accountId: number): void;
 }>();
 
@@ -62,7 +62,7 @@ export default {
   margin: 4px 0;
 }
 
-.sub-accounts {
+.balance {
   font-size: 1.2em;
   font-weight: bold;
   color: #4CAF50;

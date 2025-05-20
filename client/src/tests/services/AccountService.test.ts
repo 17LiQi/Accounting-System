@@ -1,89 +1,95 @@
-import { AccountService } from '@/api/services';
-import type { AccountRequest } from '@/models/accounts';
-import { rest } from 'msw';
-import { setupServer } from 'msw/node';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { accountsService } from '@/api/services/accounts';
+import type { AccountDTO } from '@/api/models/accounts';
+import type { AccountRequest } from '@/api/models/accounts/account-request';
+import { AccountRequestTypeEnum } from '@/api/models/accounts/account-request';
+import { apiClient } from '@/api/client';
 
-const baseUrl = '/api/accounts';
-
-const server = setupServer(
-  rest.get(baseUrl, (_req, res, ctx) => {
-    return res(ctx.json([
-      {
-        accountId: 1,
-        accountName: '银行账户',
-        accountType: { typeId: 1, typeName: 'BANK' },
-        balance: 1000
-      },
-      {
-        accountId: 2,
-        accountName: '微信账户',
-        accountType: { typeId: 2, typeName: 'WECHAT' },
-        balance: 500
+vi.mock('axios', () => ({
+  default: {
+    create: () => ({
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      interceptors: {
+        request: { use: vi.fn(), eject: vi.fn() },
+        response: { use: vi.fn(), eject: vi.fn() }
       }
-    ]));
-  }),
+    })
+  }
+}));
 
-  rest.post(baseUrl, async (req, res, ctx) => {
-    const body = await req.json() as AccountRequest;
-    return res(ctx.json({
-      accountId: 3,
-      accountName: body.accountName,
-      accountType: { typeId: body.typeId, typeName: body.type },
-      balance: 0
-    }));
-  }),
-
-  rest.get(`${baseUrl}/:id`, (req, res, ctx) => {
-    return res(ctx.json({
-      accountId: Number(req.params.id),
-      accountName: '测试账户',
-      accountType: { typeId: 1, typeName: 'BANK' },
-      balance: 1000
-    }));
-  }),
-
-  rest.get(`${baseUrl}/:id/transactions`, (_req, res, ctx) => {
-    return res(ctx.json([
-      {
-        id: '1',
-        date: '2024-01-01',
-        type: '收入',
-        amount: 1000,
-        description: '工资'
-      }
-    ]));
-  })
-);
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+vi.mock('@/api/client', () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn() }
+    }
+  },
+  isUsingMock: true
+}));
 
 describe('AccountService', () => {
-  it('获取账户列表', async () => {
-    const response = await AccountService.getAccounts();
-    expect(response.data).toHaveLength(2);
-    expect(response.data[0]).toHaveProperty('accountName', '银行账户');
+  const mockAccount: AccountDTO = {
+    accountId: 1,
+    accountName: '测试账户',
+    accountType: 'BANK',
+    balance: 1000.00
+  };
+
+  const mockAccountRequest: AccountRequest = {
+    accountName: '测试账户',
+    typeId: 1,
+    type: AccountRequestTypeEnum.Bank
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('创建账户', async () => {
-    const request: AccountRequest = {
-      accountName: '测试账户',
-      typeId: 1,
-      type: 'BANK'
-    };
-    const response = await AccountService.createAccount(request);
-    expect(response.data).toHaveProperty('accountName', '测试账户');
+  it('should get accounts', async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [mockAccount]
+    });
+
+    const result = await accountsService.getAccounts();
+    expect(result).toEqual([mockAccount]);
+    expect(apiClient.get).toHaveBeenCalledWith('/accounts');
   });
 
-  it('获取账户详情', async () => {
-    const response = await AccountService.getAccount(1);
-    expect(response.data).toHaveProperty('accountId', 1);
+  it('should create account', async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({
+      data: mockAccount
+    });
+
+    const result = await accountsService.createAccount(mockAccountRequest);
+    expect(result).toEqual(mockAccount);
+    expect(apiClient.post).toHaveBeenCalledWith('/accounts', mockAccountRequest);
   });
 
-  it('获取账户交易记录', async () => {
-    const response = await AccountService.getAccountTransactions(1);
-    expect(response.data).toHaveLength(1);
-    expect(response.data[0]).toHaveProperty('type', '收入');
+  it('should update account', async () => {
+    const accountId = 1;
+    vi.mocked(apiClient.put).mockResolvedValueOnce({
+      data: mockAccount
+    });
+
+    const result = await accountsService.updateAccount(accountId, mockAccountRequest);
+    expect(result).toEqual(mockAccount);
+    expect(apiClient.put).toHaveBeenCalledWith(`/accounts/${accountId}`, mockAccountRequest);
+  });
+
+  it('should delete account', async () => {
+    const accountId = 1;
+    vi.mocked(apiClient.delete).mockResolvedValueOnce({
+      data: { message: '删除成功' }
+    });
+
+    await accountsService.deleteAccount(accountId);
+    expect(apiClient.delete).toHaveBeenCalledWith(`/accounts/${accountId}`);
   });
 }); 

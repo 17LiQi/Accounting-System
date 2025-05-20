@@ -1,16 +1,17 @@
 // src/mocks/handlers.ts
 import { rest } from 'msw';
-import type { Account, AccountRequest } from '@/models/accounts';
+import type { AccountDTO } from '@/api/models/accounts';
+import { mockAccounts, mockAccountTypes } from '@/mocks/accounts';
 import { mockAuthApi } from './auth';
 
-const baseURL = '/api';
+const baseURL = 'http://localhost:3000/api';
 
 export const handlers = [
     // 登录接口模拟
-    rest.post(`${baseURL}/login`, async (req, res, ctx) => {
+    rest.post(`${baseURL}/auth/login`, async (req, res, ctx) => {
         try {
             const body = await req.json();
-            const response = await mockAuthApi.login(body);
+            const response = await mockAuthApi.authLogin(body);
             return res(ctx.status(response.status), ctx.json(response.data));
         } catch (error: any) {
             return res(
@@ -20,52 +21,100 @@ export const handlers = [
         }
     }),
 
-    // 账户列表接口模拟
+    // 获取账户列表
     rest.get(`${baseURL}/accounts`, (_req, res, ctx) => {
-        const accounts: Account[] = [
-            {
-                accountId: 1,
-                accountName: '工商银行',
-                accountType: { typeId: 1, typeName: 'BANK' },
-                balance: 10000
-            },
-            {
-                accountId: 2,
-                accountName: '微信钱包',
-                accountType: { typeId: 2, typeName: 'WECHAT' },
-                balance: 5000
-            }
-        ];
-        return res(ctx.json(accounts));
+        return res(
+            ctx.status(200),
+            ctx.json(mockAccounts)
+        );
     }),
+
+    // 获取账户类型列表
+    rest.get(`${baseURL}/account-types`, (_req, res, ctx) => {
+        return res(
+            ctx.status(200),
+            ctx.json(mockAccountTypes)
+        );
+    }),
+
+    // 创建账户
     rest.post(`${baseURL}/accounts`, async (req, res, ctx) => {
-        const requestBody = await req.json() as AccountRequest;
-        const account: Account = {
-            accountId: 3,
-            accountName: requestBody.accountName,
-            accountType: { typeId: requestBody.typeId, typeName: requestBody.type },
-            balance: 0
+        const newAccount = await req.json();
+        const account: AccountDTO = {
+            accountId: mockAccounts.length + 1,
+            accountName: newAccount.accountName,
+            accountType: newAccount.type,
+            description: newAccount.description || '',
+            balance: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
-        return res(ctx.json(account));
+        mockAccounts.push(account);
+        return res(
+            ctx.status(201),
+            ctx.json(account)
+        );
     }),
+
+    // 更新账户
+    rest.put(`${baseURL}/accounts/:id`, async (req, res, ctx) => {
+        const { id } = req.params;
+        const updates = await req.json();
+        const index = mockAccounts.findIndex((a: AccountDTO) => a.accountId === Number(id));
+        
+        if (index === -1) {
+            return res(
+                ctx.status(404),
+                ctx.json({ message: '账户不存在' })
+            );
+        }
+
+        const updatedAccount = {
+            ...mockAccounts[index],
+            ...updates,
+            updatedAt: new Date().toISOString()
+        };
+        mockAccounts[index] = updatedAccount;
+
+        return res(
+            ctx.status(200),
+            ctx.json(updatedAccount)
+        );
+    }),
+
+    // 删除账户
+    rest.delete(`${baseURL}/accounts/:id`, (req, res, ctx) => {
+        const { id } = req.params;
+        const index = mockAccounts.findIndex((a: AccountDTO) => a.accountId === Number(id));
+        
+        if (index === -1) {
+            return res(
+                ctx.status(404),
+                ctx.json({ message: '账户不存在' })
+            );
+        }
+
+        mockAccounts.splice(index, 1);
+        return res(
+            ctx.status(204)
+        );
+    }),
+
+    // 获取单个账户
     rest.get(`${baseURL}/accounts/:id`, (req, res, ctx) => {
         const { id } = req.params;
-        return res(ctx.json({
-            accountId: Number(id),
-            accountName: '测试账户',
-            accountType: { typeId: 1, typeName: 'BANK' },
-            balance: 1000
-        }));
-    }),
-    rest.get(`${baseURL}/accounts/:id/transactions`, (_req, res, ctx) => {
-        return res(ctx.json([
-            {
-                id: '1',
-                date: '2024-01-01',
-                type: '收入',
-                amount: 1000,
-                description: '工资'
-            }
-        ]));
+        const account = mockAccounts.find((a: AccountDTO) => a.accountId === Number(id));
+        
+        if (!account) {
+            return res(
+                ctx.status(404),
+                ctx.json({ message: '账户不存在' })
+            );
+        }
+
+        return res(
+            ctx.status(200),
+            ctx.json(account)
+        );
     })
 ];

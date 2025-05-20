@@ -1,30 +1,30 @@
 import { AuthApi } from '../apis';
 import type { LoginRequest, LoginResponse } from '../models/auth';
-import { apiClient } from '../client';
 import { mockAuthApi } from '@/mocks/auth';
-import { isUsingMock } from '../client';
-import axios, { AxiosError } from 'axios';
+import { MOCK_ENABLED } from '../client';
+import { AxiosError } from 'axios';
+import { apiClient } from '../client';
 
 class AuthService {
   private api: AuthApi;
 
   constructor() {
-    this.api = new AuthApi(apiClient);
-    console.log('AuthService initialized, mock mode:', isUsingMock);
+    this.api = new AuthApi();
+    console.log('AuthService initialized, mock mode:', MOCK_ENABLED);
   }
 
   async login(request: LoginRequest): Promise<LoginResponse> {
     console.log('Login attempt:', { 
       username: request.username, 
       passwordLength: request.password?.length,
-      isUsingMock 
+      isUsingMock: MOCK_ENABLED 
     });
 
     try {
       let response;
-      if (isUsingMock) {
+      if (MOCK_ENABLED) {
         console.log('Using mock authentication');
-        response = await mockAuthApi.login(request);
+        response = await mockAuthApi.authLogin(request);
         console.log('Mock login response:', response);
       } else {
         console.log('Using real API authentication');
@@ -58,6 +58,7 @@ class AuthService {
 
   async logout(): Promise<void> {
     console.log('Logging out user');
+    await apiClient.post('/auth/logout');
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
   }
@@ -79,6 +80,25 @@ class AuthService {
     console.log('Getting user role:', { role });
     return role;
   }
+
+  setToken(token: string): void {
+    localStorage.setItem('token', token);
+  }
+
+  clearToken(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+  }
 }
 
-export const authService = new AuthService(); 
+export const authService = new AuthService();
+
+export const login = async (data: LoginRequest): Promise<LoginResponse> => {
+  const response = await apiClient.post<LoginResponse>('/auth/login', data);
+  return response.data;
+};
+
+export const logout = async (): Promise<void> => {
+  await apiClient.post('/auth/logout');
+  localStorage.removeItem('token');
+}; 
