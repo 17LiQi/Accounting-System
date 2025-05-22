@@ -30,10 +30,10 @@ public class AccountDTO {
    * 账户类型
    */
   public enum TypeEnum {
-    BANK("BANK"),
-    WECHAT("WECHAT"),
-    ALIPAY("ALIPAY"),
-    OTHER("OTHER");
+    CASH("现金"),
+    BANK("银行卡"),
+    ALIPAY("支付宝"),
+    WECHAT("微信");
 
     private String value;
 

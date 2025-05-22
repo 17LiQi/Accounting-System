@@ -3,6 +3,7 @@ package com.as.server.config;
 import com.as.server.exception.CustomAccessDeniedHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,23 +27,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
+                .cors().and()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeHttpRequests()
-                .antMatchers("/login").permitAll()
-                .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .antMatchers("/users/**", "/accounts/**", "/sub-accounts/**", "/transaction-types/**").hasRole("ADMIN")
-                .antMatchers("/sub-accounts/**").hasAnyRole("ADMIN", "USER")
-                .antMatchers("/transactions/**", "/statistics").hasAnyRole("ADMIN", "USER")
-                .anyRequest().authenticated()
-                .and()
+                .authorizeHttpRequests(auth -> auth
+                        .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // 允许所有OPTIONS请求
+                        .antMatchers("/login").permitAll()
+                        .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .antMatchers("/users/**", "/accounts/**", "/sub-accounts/**", "/transaction-types/**").hasRole("ADMIN")
+                        .antMatchers("/sub-accounts/**").hasAnyRole("ADMIN", "USER")
+                        .antMatchers("/transactions/**", "/statistics").hasAnyRole("ADMIN", "USER")
+                        .anyRequest().authenticated()
+                )
                 .exceptionHandling()
-                .accessDeniedHandler(accessDeniedHandler) // 使用自定义 Handler
+                .accessDeniedHandler(accessDeniedHandler)
                 .and()
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

@@ -50,6 +50,13 @@ public class UserController implements UsersApi {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(userDTOs);
     }
+// 新增
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal")
+    public ResponseEntity<UserDTO> usersGet(@PathVariable Integer userId) {
+        User user = userService.findById(userId);
+        return ResponseEntity.ok(entityMapper.toUserDTO(user));
+    }
 
     @Override
     @PutMapping("/{userId}")

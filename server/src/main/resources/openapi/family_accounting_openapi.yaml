@@ -28,6 +28,41 @@ tags:
     description: the Users API
 paths:
   '/users/{userId}':
+    get:
+      tags:
+        - Users
+        - users
+      summary: 获取用户详情
+      operationId: usersGet
+      parameters:
+        - name: userId
+          in: path
+          description: 用户 ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: 用户详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '403':
+          description: 权限不足（非管理员且非本人）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
     put:
       tags:
         - Users
@@ -752,6 +787,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: 用户登出
+      operationId: logout
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 登出成功
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
   /accounts:
     get:
       tags:
@@ -1402,7 +1462,7 @@ components:
           maxLength: 50
           minLength: 0
           type: string
-          description: 交易类型名称（如“日常消费”）
+          description: 交易类型名称（如"日常消费"）
         amount:
           pattern: '^\d+(\.\d{2})?$'
           type: string
@@ -1423,7 +1483,7 @@ components:
           maxLength: 50
           minLength: 0
           type: string
-          description: 交易类型名称（如“工资”）
+          description: 交易类型名称（如"工资"）
         amount:
           pattern: '^\d+(\.\d{2})?$'
           type: string

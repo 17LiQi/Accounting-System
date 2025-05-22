@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * 账户类型
  */
 public enum AccountType {
-    BANK("BANK"),
+    CASH("现金"),
 
-    WECHAT("WECHAT"),
+    BANK("银行卡"),
 
-    ALIPAY("ALIPAY"),
+    ALIPAY("支付宝"),
 
-    OTHER("OTHER");
+    WECHAT("微信");
 
     private final String value;
 

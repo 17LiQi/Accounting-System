@@ -52,13 +52,21 @@ public class TransactionController implements TransactionsApi {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<TransactionDTO> transactionsCreate(@RequestBody TransactionRequest request) {
-        log.debug("Received create transaction request: {}", request);
+        log.info("收到创建交易请求: 时间={}, 类型ID={}, 子账号ID={}, 金额={}, 备注={}", 
+            request.getTime(), request.getTypeId(), request.getSubAccountId(), request.getAmount(), request.getRemarks());
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
+        log.debug("当前用户ID: {}", userId);
+        
         Transaction transaction = mapRequestToEntity(request, userId);
+        log.debug("映射后的交易实体: {}", transaction);
+        
         Transaction created = transactionService.create(transaction);
+        log.info("交易创建成功: ID={}, 时间={}, 金额={}", 
+            created.getTransactionId(), created.getTime(), created.getAmount());
+        
         TransactionDTO response = mapEntityToDTO(created);
-        log.debug("Created transaction: {}", response);
+        log.debug("返回的交易DTO: {}", response);
         return ResponseEntity.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
@@ -70,30 +78,41 @@ public class TransactionController implements TransactionsApi {
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "userId", required = false) Integer userId,
             @RequestParam(value = "subAccountId", required = false) Integer subAccountId) {
-        log.debug("Received transactionsList request with page={}, size={}, userId={}, subAccountId={}",
+        log.info("收到查询交易列表请求: 页码={}, 每页大小={}, 用户ID={}, 子账号ID={}",
                 page, size, userId, subAccountId);
+                
         // 手动验证参数
         if (page == null) {
+            log.error("页码参数不能为空");
             throw new IllegalArgumentException("page must not be null");
         }
         if (size == null) {
+            log.error("每页大小参数不能为空");
             throw new IllegalArgumentException("size must not be null");
         }
         if (page < 0) {
+            log.error("页码必须大于等于0, 当前值: {}", page);
             throw new IllegalArgumentException("page must be greater than or equal to 0");
         }
         if (size < 1 || size > 100) {
+            log.error("每页大小必须在1到100之间, 当前值: {}", size);
             throw new IllegalArgumentException("size must be between 1 and 100");
         }
+        
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer authenticatedUserId = Integer.parseInt(authentication.getName());
+        log.debug("当前认证用户ID: {}", authenticatedUserId);
+        
         if (userId != null && !userId.equals(authenticatedUserId) && authentication.getAuthorities().stream()
                 .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            log.warn("User {} attempted to access transactions of user {}", authenticatedUserId, userId);
+            log.warn("用户 {} 尝试访问用户 {} 的交易记录", authenticatedUserId, userId);
             throw new AccessDeniedException("Cannot access other user's transactions");
         }
+        
         Page<Transaction> transactions = transactionService.findAll(userId != null ? userId : authenticatedUserId,
                 subAccountId, PageRequest.of(page, size));
+        log.info("查询到 {} 条交易记录", transactions.getTotalElements());
+        
         TransactionListResponse response = entityMapper.toTransactionListResponse(transactions);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
@@ -102,16 +121,22 @@ public class TransactionController implements TransactionsApi {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<TransactionDTO> transactionGet(@PathVariable Integer id) {
-        log.debug("Received get transaction request: id={}", id);
+        log.info("收到获取交易详情请求: ID={}", id);
         Authentication auth = getContext().getAuthentication();
+        log.debug("当前认证用户: {}", auth.getName());
+        
         Transaction transaction = transactionService.findById(id);
+        log.debug("查询到的交易: {}", transaction);
+        
         if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")) &&
                 !transaction.getUser().getUserId().equals(Integer.valueOf(auth.getName()))) {
-            log.warn("User {} attempted to access transaction {} of another user", auth.getName(), id);
+            log.warn("用户 {} 尝试访问用户 {} 的交易记录", auth.getName(), transaction.getUser().getUserId());
             throw new AccessDeniedException("Cannot access other user's transaction");
         }
+        
         TransactionDTO response = mapEntityToDTO(transaction);
-        log.debug("Returning transaction: {}", response);
+        log.info("返回交易详情: ID={}, 时间={}, 金额={}", 
+            response.getTransactionId(), response.getTime(), response.getAmount());
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
@@ -119,23 +144,31 @@ public class TransactionController implements TransactionsApi {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<TransactionDTO> transactionUpdate(@PathVariable Integer id, @RequestBody TransactionRequest request) {
-        log.debug("Received update transaction request: id={}, request={}", id, request);
+        log.info("收到更新交易请求: ID={}, 时间={}, 类型ID={}, 子账号ID={}, 金额={}, 备注={}", 
+            id, request.getTime(), request.getTypeId(), request.getSubAccountId(), request.getAmount(), request.getRemarks());
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
+        log.debug("当前用户ID: {}", userId);
 
-        // Fetch existing transaction to check ownership
+        // 获取现有交易以检查所有权
         Transaction existing = transactionService.findById(id);
+        log.debug("现有交易: {}", existing);
+        
         if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")) &&
                 !existing.getUser().getUserId().equals(userId)) {
-            log.warn("User {} attempted to update transaction {} of another user", auth.getName(), id);
+            log.warn("用户 {} 尝试更新用户 {} 的交易记录", auth.getName(), existing.getUser().getUserId());
             throw new AccessDeniedException("Cannot update other user's transaction");
         }
 
         Transaction transaction = mapRequestToEntity(request, userId);
-        transaction.setTransactionId(id); // Ensure ID is set for update
+        transaction.setTransactionId(id); // 确保ID被设置用于更新
+        log.debug("更新后的交易实体: {}", transaction);
+        
         Transaction updated = transactionService.update(id, transaction);
+        log.info("交易更新成功: ID={}, 时间={}, 金额={}", 
+            updated.getTransactionId(), updated.getTime(), updated.getAmount());
+        
         TransactionDTO response = mapEntityToDTO(updated);
-        log.debug("Updated transaction: {}", response);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
@@ -143,16 +176,21 @@ public class TransactionController implements TransactionsApi {
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> transactionDelete(@PathVariable Integer id) {
-        log.debug("Received delete transaction request: id={}", id);
+        log.info("收到删除交易请求: ID={}", id);
         Authentication auth = getContext().getAuthentication();
+        log.debug("当前认证用户: {}", auth.getName());
+        
         Transaction transaction = transactionService.findById(id);
+        log.debug("要删除的交易: {}", transaction);
+        
         if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")) &&
                 !transaction.getUser().getUserId().equals(Integer.valueOf(auth.getName()))) {
-            log.warn("User {} attempted to delete transaction {} of another user", auth.getName(), id);
+            log.warn("用户 {} 尝试删除用户 {} 的交易记录", auth.getName(), transaction.getUser().getUserId());
             throw new AccessDeniedException("Cannot delete other user's transaction");
         }
+        
         transactionService.delete(id);
-        log.debug("Deleted transaction: id={}", id);
+        log.info("交易删除成功: ID={}", id);
         return ResponseEntity.noContent().build();
     }
 
