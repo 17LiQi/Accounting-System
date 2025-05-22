@@ -25,19 +25,19 @@ export interface UserRequest {
      * @type {string}
      * @memberof UserRequest
      */
-    'username': string;
+    username: string;
     /**
      * 
      * @type {string}
      * @memberof UserRequest
      */
-    'password': string;
+    password: string;
     /**
      * 
      * @type {string}
      * @memberof UserRequest
      */
-    'role': UserRequestRoleEnum;
+    role: string;
 }
 
 export const UserRequestRoleEnum = {

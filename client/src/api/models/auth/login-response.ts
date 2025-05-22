@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-
+import type { UserDTO } from '../user/user-dto';
 
 /**
  * 
@@ -32,6 +32,7 @@ export interface LoginResponse {
      * @memberof LoginResponse
      */
     'role': LoginResponseRoleEnum;
+    user: UserDTO;
 }
 
 export const LoginResponseRoleEnum = {

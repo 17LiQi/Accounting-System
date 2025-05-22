@@ -5,23 +5,33 @@ import { MOCK_ENABLED } from '@/api/client';
 
 let worker: ReturnType<typeof setupWorker>;
 
-if (MOCK_ENABLED) {
-  worker = setupWorker(...handlers);
-  worker.start();
-}
-
 // 启动mock服务
 export async function startMockService() {
+  if (!MOCK_ENABLED) {
+    console.log('Mock service is disabled');
+    return;
+  }
+
   if (!worker) {
     worker = setupWorker(...handlers);
   }
   
   try {
     await worker.start({
-      onUnhandledRequest: 'bypass', // 对于未处理的请求，直接放行
+      onUnhandledRequest: 'bypass',
+      serviceWorker: {
+        url: '/mockServiceWorker.js',
+        options: {
+          scope: '/',
+        },
+      },
     });
     console.log('Mock service started successfully');
   } catch (error) {
     console.error('Failed to start mock service:', error);
+    // 如果启动失败，禁用 mock 服务
+    if (import.meta.env.DEV) {
+      console.warn('Mock service failed to start, continuing without mocks');
+    }
   }
 }

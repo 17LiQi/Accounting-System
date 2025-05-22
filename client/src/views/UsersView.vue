@@ -1,18 +1,23 @@
 <template>
   <div class="users-view">
     <h1>用户管理</h1>
-    <div v-if="formError" class="error-message">{{ formError }}</div>
     <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="store.error" class="error-message">{{ store.error }}</div>
-    <div v-else class="users-list">
-      <div v-for="user in store.users" :key="user.userId" class="user-card">
-        <h3>{{ user.username }}</h3>
-        <p>角色: {{ user.role }}</p>
-        <div class="actions">
-          <button class="edit" @click="editUser(user)">编辑</button>
-          <button class="delete" @click="deleteUser(user.userId)">删除</button>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-else>
+      <div class="users-list">
+        <div v-for="user in users" :key="user.id" class="user-item">
+          <div class="user-info">
+            <h3>{{ user.username }}</h3>
+            <p>角色: {{ user.role }}</p>
+            <p>创建时间: {{ user.createdAt }}</p>
+          </div>
+          <div class="actions">
+            <button @click="editUser(user)">编辑</button>
+            <button @click="deleteUser(user.id)" class="delete">删除</button>
+          </div>
         </div>
       </div>
+      <button @click="showAddForm = true" class="add-button">添加用户</button>
     </div>
 
     <!-- 编辑用户对话框 -->
@@ -51,23 +56,27 @@ import { useUsersStore } from '@/store/modules/users';
 import type { UserDTO } from '@/api/models/user/user-dto';
 import type { UserRequest } from '@/api/models/user/user-request';
 
-const formError = ref('');
-const store = useUsersStore();
+const usersStore = useUsersStore();
 const loading = ref(false);
+const error = ref<string | null>(null);
+const showAddForm = ref(false);
 const showEditDialog = ref(false);
 const editingUser = ref<UserDTO | null>(null);
 const password = ref('');
 
-onMounted(async () => {
+const fetchUsers = async () => {
+  loading.value = true;
+  error.value = null;
   try {
-    loading.value = true;
-    await store.fetchUsers();
-    loading.value = false;
+    await usersStore.fetchUsers();
   } catch (err: any) {
-    store.error = err.message || '加载用户列表失败';
+    error.value = err.message || '获取用户列表失败';
+  } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(fetchUsers);
 
 const editUser = (user: UserDTO) => {
   editingUser.value = { ...user };
@@ -76,9 +85,8 @@ const editUser = (user: UserDTO) => {
 };
 
 const saveUser = async () => {
-  formError.value = '';
   if (!editingUser.value?.username) {
-    formError.value = '用户名不能为空';
+    error.value = '用户名不能为空';
     return;
   }
 
@@ -92,15 +100,15 @@ const saveUser = async () => {
     };
 
     if (editingUser.value.userId) {
-      await store.updateUser(editingUser.value.userId, userRequest);
+      await usersStore.updateUser(editingUser.value.userId, userRequest);
     } else {
-      await store.createUser(userRequest);
+      await usersStore.createUser(userRequest);
     }
 
     showEditDialog.value = false;
     editingUser.value = null;
     password.value = '';
-    await store.fetchUsers();
+    await fetchUsers();
   } catch (error) {
     console.error('保存用户失败:', error);
   }
@@ -111,9 +119,9 @@ async function deleteUser(userId: number) {
 
   try {
     loading.value = true;
-    await store.deleteUser(userId);
+    await usersStore.deleteUser(userId);
   } catch (err: any) {
-    store.error = err.message || '删除用户失败';
+    error.value = err.message || '删除用户失败';
   } finally {
     loading.value = false;
   }
@@ -125,50 +133,67 @@ async function deleteUser(userId: number) {
   padding: 20px;
 }
 
-.loading, .error-message {
+.loading,
+.error {
   text-align: center;
   padding: 20px;
+  font-size: 18px;
 }
 
-.error-message {
+.error {
   color: red;
 }
 
 .users-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.user-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
+.user-item {
   background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.user-card h3 {
-  margin: 0 0 10px;
+.user-info h3 {
+  margin: 0 0 10px 0;
+}
+
+.user-info p {
+  margin: 5px 0;
+  color: #666;
 }
 
 .actions {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
 }
 
 button {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
+  cursor: pointer;
   background: #4CAF50;
   color: white;
-  cursor: pointer;
 }
 
 button.delete {
   background: #f44336;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.add-button {
+  margin-top: 20px;
+  background: #2196F3;
 }
 
 .dialog {

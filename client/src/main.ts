@@ -8,11 +8,4 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 
-// 在开发环境下启动 mock 服务
-if (import.meta.env.DEV) {
-  import('./mocks/browser').then(({ startMockService }) => {
-    startMockService();
-  });
-}
-
 app.mount('#app');

@@ -1,24 +1,24 @@
 import { apiClient } from '../client';
-import type { AccountTypeDTO, AccountTypeRequest } from '../models/accountTypes';
+import type { AccountTypeDTO } from '../models/accountTypes';
 
-class AccountTypesService {
+export class AccountTypesService {
   async getAccountTypes(): Promise<AccountTypeDTO[]> {
-    const response = await apiClient.get('/account-types');
+    const response = await apiClient.get<AccountTypeDTO[]>('/transaction-types');
     return response.data;
   }
 
-  async createAccountType(request: AccountTypeRequest): Promise<AccountTypeDTO> {
-    const response = await apiClient.post('/account-types', request);
+  async createAccountType(request: any): Promise<AccountTypeDTO> {
+    const response = await apiClient.post<AccountTypeDTO>('/transaction-types', request);
     return response.data;
   }
 
-  async updateAccountType(typeId: number, request: AccountTypeRequest): Promise<AccountTypeDTO> {
-    const response = await apiClient.put(`/account-types/${typeId}`, request);
+  async updateAccountType(typeId: number, request: any): Promise<AccountTypeDTO> {
+    const response = await apiClient.put<AccountTypeDTO>(`/transaction-types/${typeId}`, request);
     return response.data;
   }
 
   async deleteAccountType(typeId: number): Promise<void> {
-    await apiClient.delete(`/account-types/${typeId}`);
+    await apiClient.delete(`/transaction-types/${typeId}`);
   }
 }
 

@@ -21,7 +21,7 @@ export const mockAuthApi = {
     if (user) {
       return {
         data: {
-          token: 'test-token',
+          token: 'mock-token',
           role: user.role
         },
         status: 200,

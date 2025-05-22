@@ -12,7 +12,12 @@
  * Do not edit the class manually.
  */
 
-
+export enum AccountRequestTypeEnum {
+  Cash = 'CASH',
+  Bank = 'BANK',
+  Alipay = 'ALIPAY',
+  Wechat = 'WECHAT'
+}
 
 /**
  * 
@@ -34,18 +39,11 @@ export interface AccountRequest {
     'typeId': number;
     /**
      * 账户类型
-     * @type {string}
+     * @type {AccountRequestTypeEnum}
      * @memberof AccountRequest
      */
     'type': AccountRequestTypeEnum;
 }
-
-export const AccountRequestTypeEnum = {
-    Bank: 'BANK',
-    Wechat: 'WECHAT',
-    Alipay: 'ALIPAY',
-    Other: 'OTHER'
-} as const;
 
 export type AccountRequestTypeEnum = typeof AccountRequestTypeEnum[keyof typeof AccountRequestTypeEnum];
 

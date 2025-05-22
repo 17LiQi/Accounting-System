@@ -69,42 +69,7 @@ export const AccountsApiAxiosParamCreator = function (configuration?: Configurat
                 options: localVarRequestOptions,
             };
         },
-        /**
-         * 
-         * @summary 创建顶级账户
-         * @param {AccountRequest} accountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsCreate_1: async (accountRequest: AccountRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'accountRequest' is not null or undefined
-            assertParamExists('accountsCreate_1', 'accountRequest', accountRequest)
-            const localVarPath = `/accounts`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(accountRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
+        
         /**
          * 
          * @summary 删除顶级账户
@@ -141,75 +106,11 @@ export const AccountsApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @summary 删除顶级账户
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsDelete_2: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('accountsDelete_2', 'id', id)
-            const localVarPath = `/accounts/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 列出顶级账户
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         accountsList: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/accounts`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 列出顶级账户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsList_3: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/accounts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -273,46 +174,6 @@ export const AccountsApiAxiosParamCreator = function (configuration?: Configurat
                 options: localVarRequestOptions,
             };
         },
-        /**
-         * 
-         * @summary 更新顶级账户
-         * @param {string} id 
-         * @param {AccountRequest} accountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsUpdate_4: async (id: string, accountRequest: AccountRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('accountsUpdate_4', 'id', id)
-            // verify required parameter 'accountRequest' is not null or undefined
-            assertParamExists('accountsUpdate_4', 'accountRequest', accountRequest)
-            const localVarPath = `/accounts/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(accountRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
     }
 };
 
@@ -338,19 +199,6 @@ export const AccountsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 创建顶级账户
-         * @param {AccountRequest} accountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async accountsCreate_1(accountRequest: AccountRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Account>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.accountsCreate_1(accountRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AccountsApi.accountsCreate_1']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 删除顶级账户
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -360,19 +208,6 @@ export const AccountsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.accountsDelete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AccountsApi.accountsDelete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 删除顶级账户
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async accountsDelete_2(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.accountsDelete_2(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AccountsApi.accountsDelete_2']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -389,18 +224,6 @@ export const AccountsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 列出顶级账户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async accountsList_3(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Account>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.accountsList_3(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AccountsApi.accountsList_3']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 更新顶级账户
          * @param {string} id 
          * @param {AccountRequest} accountRequest 
@@ -411,20 +234,6 @@ export const AccountsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.accountsUpdate(id, accountRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AccountsApi.accountsUpdate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 更新顶级账户
-         * @param {string} id 
-         * @param {AccountRequest} accountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async accountsUpdate_4(id: string, accountRequest: AccountRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Account>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.accountsUpdate_4(id, accountRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AccountsApi.accountsUpdate_4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -449,16 +258,6 @@ export const AccountsApiFactory = function (configuration?: Configuration, baseP
         },
         /**
          * 
-         * @summary 创建顶级账户
-         * @param {AccountRequest} accountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsCreate_1(accountRequest: AccountRequest, options?: RawAxiosRequestConfig): AxiosPromise<Account> {
-            return localVarFp.accountsCreate_1(accountRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 删除顶级账户
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -466,16 +265,6 @@ export const AccountsApiFactory = function (configuration?: Configuration, baseP
          */
         accountsDelete(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.accountsDelete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 删除顶级账户
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsDelete_2(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.accountsDelete_2(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -488,15 +277,6 @@ export const AccountsApiFactory = function (configuration?: Configuration, baseP
         },
         /**
          * 
-         * @summary 列出顶级账户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsList_3(options?: RawAxiosRequestConfig): AxiosPromise<Account> {
-            return localVarFp.accountsList_3(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 更新顶级账户
          * @param {string} id 
          * @param {AccountRequest} accountRequest 
@@ -505,17 +285,6 @@ export const AccountsApiFactory = function (configuration?: Configuration, baseP
          */
         accountsUpdate(id: string, accountRequest: AccountRequest, options?: RawAxiosRequestConfig): AxiosPromise<Account> {
             return localVarFp.accountsUpdate(id, accountRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 更新顶级账户
-         * @param {string} id 
-         * @param {AccountRequest} accountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        accountsUpdate_4(id: string, accountRequest: AccountRequest, options?: RawAxiosRequestConfig): AxiosPromise<Account> {
-            return localVarFp.accountsUpdate_4(id, accountRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -541,18 +310,6 @@ export class AccountsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 创建顶级账户
-     * @param {AccountRequest} accountRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AccountsApi
-     */
-    public accountsCreate_1(accountRequest: AccountRequest, options?: RawAxiosRequestConfig) {
-        return AccountsApiFp(this.configuration).accountsCreate_1(accountRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 删除顶级账户
      * @param {string} id 
      * @param {*} [options] Override http request option.
@@ -561,18 +318,6 @@ export class AccountsApi extends BaseAPI {
      */
     public accountsDelete(id: string, options?: RawAxiosRequestConfig) {
         return AccountsApiFp(this.configuration).accountsDelete(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 删除顶级账户
-     * @param {string} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AccountsApi
-     */
-    public accountsDelete_2(id: string, options?: RawAxiosRequestConfig) {
-        return AccountsApiFp(this.configuration).accountsDelete_2(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -588,17 +333,6 @@ export class AccountsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 列出顶级账户
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AccountsApi
-     */
-    public accountsList_3(options?: RawAxiosRequestConfig) {
-        return AccountsApiFp(this.configuration).accountsList_3(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 更新顶级账户
      * @param {string} id 
      * @param {AccountRequest} accountRequest 
@@ -608,19 +342,6 @@ export class AccountsApi extends BaseAPI {
      */
     public accountsUpdate(id: string, accountRequest: AccountRequest, options?: RawAxiosRequestConfig) {
         return AccountsApiFp(this.configuration).accountsUpdate(id, accountRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 更新顶级账户
-     * @param {string} id 
-     * @param {AccountRequest} accountRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AccountsApi
-     */
-    public accountsUpdate_4(id: string, accountRequest: AccountRequest, options?: RawAxiosRequestConfig) {
-        return AccountsApiFp(this.configuration).accountsUpdate_4(id, accountRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

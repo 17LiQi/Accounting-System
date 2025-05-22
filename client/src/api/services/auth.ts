@@ -1,104 +1,105 @@
-import { AuthApi } from '../apis';
-import type { LoginRequest, LoginResponse } from '../models/auth';
-import { mockAuthApi } from '@/mocks/auth';
-import { MOCK_ENABLED } from '../client';
+import { Configuration } from '../configuration';
+import { AuthApi } from '../apis/auth-api';
+import { LoginRequest, LoginResponse } from '../models';
+import { LogoutResponse } from '../models/auth';
 import { AxiosError } from 'axios';
-import { apiClient } from '../client';
+import { apiClient, isUsingMock } from '../client';
+
+const config = new Configuration({
+    basePath: 'http://localhost:8080'
+});
+
+const authApi = new AuthApi(config);
 
 class AuthService {
-  private api: AuthApi;
-
-  constructor() {
-    this.api = new AuthApi();
-    console.log('AuthService initialized, mock mode:', MOCK_ENABLED);
-  }
-
-  async login(request: LoginRequest): Promise<LoginResponse> {
-    console.log('Login attempt:', { 
-      username: request.username, 
-      passwordLength: request.password?.length,
-      isUsingMock: MOCK_ENABLED 
-    });
-
-    try {
-      let response;
-      if (MOCK_ENABLED) {
-        console.log('Using mock authentication');
-        response = await mockAuthApi.authLogin(request);
-        console.log('Mock login response:', response);
-      } else {
-        console.log('Using real API authentication');
-        response = await this.api.authLogin(request);
-        console.log('API login response:', response);
-      }
-      
-      if (!response || !response.data) {
-        console.error('Invalid response:', response);
-        throw new Error('无效的响应数据');
-      }
-
-      if (!response.data.token) {
-        console.error('Response missing token:', response.data);
-        throw new Error('响应数据缺少token');
-      }
-
-      console.log('Login successful, saving token and role');
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userRole', response.data.role);
-      return response.data;
-    } catch (error: unknown) {
-      console.error('Login error details:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        response: error instanceof AxiosError ? error.response?.data : undefined
-      });
-      throw error;
+    /**
+     * 用户登录
+     * @param data 登录请求数据
+     */
+    async login(data: LoginRequest): Promise<LoginResponse> {
+        try {
+            const response = await apiClient.post<LoginResponse>('/login', data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                console.error('登录请求错误:', error.response?.data);
+                throw new Error(error.response?.data?.message || '登录失败');
+            }
+            throw error;
+        }
     }
-  }
 
-  async logout(): Promise<void> {
-    console.log('Logging out user');
-    await apiClient.post('/auth/logout');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-  }
+    /**
+     * 用户登出
+     */
+    async logout(): Promise<void> {
+        try {
+            await authApi.authLogout();
+            this.clearToken();
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw new Error(error.response?.data?.message || '登出失败');
+            }
+            throw error;
+        }
+    }
 
-  isAuthenticated(): boolean {
-    const hasToken = !!localStorage.getItem('token');
-    console.log('Checking authentication status:', { hasToken });
-    return hasToken;
-  }
+    /**
+     * 检查用户是否已认证
+     */
+    isAuthenticated(): boolean {
+        return !!localStorage.getItem('token');
+    }
 
-  getToken(): string | null {
-    const token = localStorage.getItem('token');
-    console.log('Getting token:', { hasToken: !!token });
-    return token;
-  }
+    /**
+     * 获取用户角色
+     */
+    getUserRole(): string | null {
+        return localStorage.getItem('userRole');
+    }
 
-  getUserRole(): string | null {
-    const role = localStorage.getItem('userRole');
-    console.log('Getting user role:', { role });
-    return role;
-  }
+    /**
+     * 设置认证令牌
+     */
+    setToken(token: string): void {
+        localStorage.setItem('token', token);
+    }
 
-  setToken(token: string): void {
-    localStorage.setItem('token', token);
-  }
-
-  clearToken(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-  }
+    /**
+     * 清除认证信息
+     */
+    clearToken(): void {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+    }
 }
 
 export const authService = new AuthService();
 
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
-  const response = await apiClient.post<LoginResponse>('/auth/login', data);
+  const response = await apiClient.post<LoginResponse>('/login', data, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  });
   return response.data;
 };
 
 export const logout = async (): Promise<void> => {
-  await apiClient.post('/auth/logout');
+  if (!isUsingMock) {
+    await apiClient.post('/logout', {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+  }
   localStorage.removeItem('token');
+  localStorage.removeItem('userRole');
 }; 

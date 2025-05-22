@@ -1,9 +1,8 @@
 <template>
   <div class="app">
-    <nav v-if="isAuthenticated" class="nav">
+    <nav v-if="showNav" class="nav">
       <router-link to="/" class="nav-item">首页</router-link>
       <router-link to="/accounts" class="nav-item">账户管理</router-link>
-      <router-link to="/sub-accounts" class="nav-item">子账户管理</router-link>
       <router-link to="/transactions" class="nav-item">交易记录</router-link>
       <router-link to="/statistics" class="nav-item">统计</router-link>
       <router-link v-if="isAdmin" to="/users" class="nav-item">用户管理</router-link>
@@ -17,13 +16,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { authService } from '@/api/services/auth';
 
 const router = useRouter();
+const route = useRoute();
 
 const isAuthenticated = computed(() => authService.isAuthenticated());
 const isAdmin = computed(() => authService.getUserRole() === 'ADMIN');
+const showNav = computed(() => isAuthenticated.value && route.name !== 'login');
 
 function logout() {
   authService.logout();

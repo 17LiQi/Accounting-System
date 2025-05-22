@@ -1,9 +1,15 @@
 import { defineStore } from 'pinia';
 import { transactionsService } from '@/api/services/transactions';
 import type { TransactionDTO, TransactionRequest } from '@/api/models/transactions';
+import type { UserDTO } from '@/api/models/user/user-dto';
+import { usersService } from '@/api/services/users';
+
+interface TransactionWithUser extends TransactionDTO {
+  user?: UserDTO;
+}
 
 interface TransactionState {
-  transactions: TransactionDTO[];
+  transactions: TransactionWithUser[];
   loading: boolean;
   error: string | null;
 }
@@ -20,8 +26,21 @@ export const useTransactionStore = defineStore('transactions', {
       this.loading = true;
       this.error = null;
       try {
-        const transactions = await transactionsService.getTransactions();
-        this.transactions = transactions;
+        const response = await transactionsService.getTransactions();
+        
+        // 获取所有相关用户的信息
+        const userIds = [...new Set(response.transactions.map(t => t.userId))];
+        const users = await Promise.all(
+          userIds.map(id => usersService.getUser(id))
+        );
+        
+        // 将用户信息添加到交易记录中
+        const transactionsWithUsers: TransactionWithUser[] = response.transactions.map(transaction => ({
+          ...transaction,
+          user: users.find(u => u.userId === transaction.userId)
+        }));
+        
+        this.transactions = transactionsWithUsers;
       } catch (error) {
         this.error = error instanceof Error ? error.message : '获取交易列表失败';
       } finally {
@@ -34,7 +53,13 @@ export const useTransactionStore = defineStore('transactions', {
       this.error = null;
       try {
         const transaction = await transactionsService.createTransaction(request);
-        this.transactions.push(transaction);
+        // 获取用户信息
+        const user = await usersService.getUser(transaction.userId);
+        const transactionWithUser: TransactionWithUser = {
+          ...transaction,
+          user
+        };
+        this.transactions.push(transactionWithUser);
       } catch (error) {
         this.error = error instanceof Error ? error.message : '创建交易失败';
         throw error;
@@ -48,9 +73,15 @@ export const useTransactionStore = defineStore('transactions', {
       this.error = null;
       try {
         const transaction = await transactionsService.updateTransaction(id, request);
+        // 获取用户信息
+        const user = await usersService.getUser(transaction.userId);
+        const transactionWithUser: TransactionWithUser = {
+          ...transaction,
+          user
+        };
         const index = this.transactions.findIndex(t => t.transactionId === id);
         if (index !== -1) {
-          this.transactions[index] = transaction;
+          this.transactions[index] = transactionWithUser;
         }
       } catch (error) {
         this.error = error instanceof Error ? error.message : '更新交易失败';
@@ -72,6 +103,10 @@ export const useTransactionStore = defineStore('transactions', {
       } finally {
         this.loading = false;
       }
+    },
+
+    setTransactions(transactions: TransactionWithUser[]) {
+      this.transactions = transactions;
     }
   }
 }); 

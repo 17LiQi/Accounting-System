@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-
+import type { UserDTO } from '../user/user-dto';
 
 /**
  * 
@@ -56,6 +56,7 @@ export interface SubAccountDTO {
      * @memberof SubAccountDTO
      */
     'balance': string;
+    'users?: UserDTO[];
 }
 
 export const SubAccountDTOCardTypeEnum = {

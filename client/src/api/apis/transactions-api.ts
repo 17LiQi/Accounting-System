@@ -71,40 +71,6 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
-         * @summary 删除交易记录
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteTransaction_1: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteTransaction_1', 'id', id)
-            const localVarPath = `/transactions/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 获取交易记录详情
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -139,40 +105,6 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
-         * @summary 获取交易记录详情
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTransaction_2: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getTransaction_2', 'id', id)
-            const localVarPath = `/transactions/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 创建交易记录
          * @param {TransactionRequest} transactionRequest 
          * @param {*} [options] Override http request option.
@@ -181,42 +113,6 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
         transactionsCreate: async (transactionRequest: TransactionRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'transactionRequest' is not null or undefined
             assertParamExists('transactionsCreate', 'transactionRequest', transactionRequest)
-            const localVarPath = `/transactions`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(transactionRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 创建交易记录
-         * @param {TransactionRequest} transactionRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        transactionsCreate_3: async (transactionRequest: TransactionRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'transactionRequest' is not null or undefined
-            assertParamExists('transactionsCreate_3', 'transactionRequest', transactionRequest)
             const localVarPath = `/transactions`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -299,60 +195,6 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
-         * @summary 列出交易记录
-         * @param {number} page 
-         * @param {number} size 
-         * @param {number} [userId] 
-         * @param {number} [subAccountId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        transactionsList_4: async (page: number, size: number, userId?: number, subAccountId?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'page' is not null or undefined
-            assertParamExists('transactionsList_4', 'page', page)
-            // verify required parameter 'size' is not null or undefined
-            assertParamExists('transactionsList_4', 'size', size)
-            const localVarPath = `/transactions`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-            if (userId !== undefined) {
-                localVarQueryParameter['userId'] = userId;
-            }
-
-            if (subAccountId !== undefined) {
-                localVarQueryParameter['subAccountId'] = subAccountId;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 更新交易记录
          * @param {string} id 
          * @param {TransactionRequest} transactionRequest 
@@ -364,46 +206,6 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
             assertParamExists('updateTransaction', 'id', id)
             // verify required parameter 'transactionRequest' is not null or undefined
             assertParamExists('updateTransaction', 'transactionRequest', transactionRequest)
-            const localVarPath = `/transactions/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(transactionRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 更新交易记录
-         * @param {string} id 
-         * @param {TransactionRequest} transactionRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateTransaction_5: async (id: string, transactionRequest: TransactionRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateTransaction_5', 'id', id)
-            // verify required parameter 'transactionRequest' is not null or undefined
-            assertParamExists('updateTransaction_5', 'transactionRequest', transactionRequest)
             const localVarPath = `/transactions/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -456,19 +258,6 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 删除交易记录
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteTransaction_1(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteTransaction_1(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['TransactionsApi.deleteTransaction_1']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 获取交易记录详情
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -482,19 +271,6 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 获取交易记录详情
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getTransaction_2(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TransactionDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTransaction_2(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['TransactionsApi.getTransaction_2']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 创建交易记录
          * @param {TransactionRequest} transactionRequest 
          * @param {*} [options] Override http request option.
@@ -504,19 +280,6 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.transactionsCreate(transactionRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TransactionsApi.transactionsCreate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 创建交易记录
-         * @param {TransactionRequest} transactionRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async transactionsCreate_3(transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TransactionDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.transactionsCreate_3(transactionRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['TransactionsApi.transactionsCreate_3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -537,22 +300,6 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 列出交易记录
-         * @param {number} page 
-         * @param {number} size 
-         * @param {number} [userId] 
-         * @param {number} [subAccountId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async transactionsList_4(page: number, size: number, userId?: number, subAccountId?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TransactionListResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.transactionsList_4(page, size, userId, subAccountId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['TransactionsApi.transactionsList_4']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 更新交易记录
          * @param {string} id 
          * @param {TransactionRequest} transactionRequest 
@@ -563,20 +310,6 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.updateTransaction(id, transactionRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TransactionsApi.updateTransaction']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 更新交易记录
-         * @param {string} id 
-         * @param {TransactionRequest} transactionRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateTransaction_5(id: string, transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TransactionDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateTransaction_5(id, transactionRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['TransactionsApi.updateTransaction_5']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -601,16 +334,6 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
-         * @summary 删除交易记录
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteTransaction_1(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteTransaction_1(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 获取交易记录详情
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -621,16 +344,6 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
-         * @summary 获取交易记录详情
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTransaction_2(id: string, options?: RawAxiosRequestConfig): AxiosPromise<TransactionDTO> {
-            return localVarFp.getTransaction_2(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 创建交易记录
          * @param {TransactionRequest} transactionRequest 
          * @param {*} [options] Override http request option.
@@ -638,16 +351,6 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
          */
         transactionsCreate(transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<TransactionDTO> {
             return localVarFp.transactionsCreate(transactionRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 创建交易记录
-         * @param {TransactionRequest} transactionRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        transactionsCreate_3(transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<TransactionDTO> {
-            return localVarFp.transactionsCreate_3(transactionRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -664,19 +367,6 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
-         * @summary 列出交易记录
-         * @param {number} page 
-         * @param {number} size 
-         * @param {number} [userId] 
-         * @param {number} [subAccountId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        transactionsList_4(page: number, size: number, userId?: number, subAccountId?: number, options?: RawAxiosRequestConfig): AxiosPromise<TransactionListResponse> {
-            return localVarFp.transactionsList_4(page, size, userId, subAccountId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 更新交易记录
          * @param {string} id 
          * @param {TransactionRequest} transactionRequest 
@@ -685,17 +375,6 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
          */
         updateTransaction(id: string, transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<TransactionDTO> {
             return localVarFp.updateTransaction(id, transactionRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 更新交易记录
-         * @param {string} id 
-         * @param {TransactionRequest} transactionRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateTransaction_5(id: string, transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<TransactionDTO> {
-            return localVarFp.updateTransaction_5(id, transactionRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -721,18 +400,6 @@ export class TransactionsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 删除交易记录
-     * @param {string} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof TransactionsApi
-     */
-    public deleteTransaction_1(id: string, options?: RawAxiosRequestConfig) {
-        return TransactionsApiFp(this.configuration).deleteTransaction_1(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 获取交易记录详情
      * @param {string} id 
      * @param {*} [options] Override http request option.
@@ -745,18 +412,6 @@ export class TransactionsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 获取交易记录详情
-     * @param {string} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof TransactionsApi
-     */
-    public getTransaction_2(id: string, options?: RawAxiosRequestConfig) {
-        return TransactionsApiFp(this.configuration).getTransaction_2(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 创建交易记录
      * @param {TransactionRequest} transactionRequest 
      * @param {*} [options] Override http request option.
@@ -765,18 +420,6 @@ export class TransactionsApi extends BaseAPI {
      */
     public transactionsCreate(transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig) {
         return TransactionsApiFp(this.configuration).transactionsCreate(transactionRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 创建交易记录
-     * @param {TransactionRequest} transactionRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof TransactionsApi
-     */
-    public transactionsCreate_3(transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig) {
-        return TransactionsApiFp(this.configuration).transactionsCreate_3(transactionRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -796,21 +439,6 @@ export class TransactionsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 列出交易记录
-     * @param {number} page 
-     * @param {number} size 
-     * @param {number} [userId] 
-     * @param {number} [subAccountId] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof TransactionsApi
-     */
-    public transactionsList_4(page: number, size: number, userId?: number, subAccountId?: number, options?: RawAxiosRequestConfig) {
-        return TransactionsApiFp(this.configuration).transactionsList_4(page, size, userId, subAccountId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 更新交易记录
      * @param {string} id 
      * @param {TransactionRequest} transactionRequest 
@@ -820,19 +448,6 @@ export class TransactionsApi extends BaseAPI {
      */
     public updateTransaction(id: string, transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig) {
         return TransactionsApiFp(this.configuration).updateTransaction(id, transactionRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 更新交易记录
-     * @param {string} id 
-     * @param {TransactionRequest} transactionRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof TransactionsApi
-     */
-    public updateTransaction_5(id: string, transactionRequest: TransactionRequest, options?: RawAxiosRequestConfig) {
-        return TransactionsApiFp(this.configuration).updateTransaction_5(id, transactionRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

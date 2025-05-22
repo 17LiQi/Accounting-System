@@ -752,6 +752,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: 用户登出
+      operationId: logout
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 登出成功
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
   /accounts:
     get:
       tags:

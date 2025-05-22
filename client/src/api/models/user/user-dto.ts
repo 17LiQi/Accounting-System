@@ -25,19 +25,43 @@ export interface UserDTO {
      * @type {number}
      * @memberof UserDTO
      */
-    'userId': number;
+    userId: number;
     /**
      * 
      * @type {string}
      * @memberof UserDTO
      */
-    'username': string;
+    username: string;
     /**
      * 
      * @type {string}
      * @memberof UserDTO
      */
-    'role': UserDTORoleEnum;
+    role: 'ADMIN' | 'USER';
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDTO
+     */
+    'email'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDTO
+     */
+    'phone'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDTO
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDTO
+     */
+    'updatedAt': string;
 }
 
 export const UserDTORoleEnum = {
@@ -46,5 +70,13 @@ export const UserDTORoleEnum = {
 } as const;
 
 export type UserDTORoleEnum = typeof UserDTORoleEnum[keyof typeof UserDTORoleEnum];
+
+export interface UserRequest {
+  username: string;
+  password: string;
+  role?: 'ADMIN' | 'USER';
+  email?: string;
+  phone?: string;
+}
 
 

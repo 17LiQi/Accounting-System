@@ -6,7 +6,7 @@
         <label for="username">用户名</label>
         <input
           id="username"
-          v-model="form.username"
+          v-model="formData.username"
           type="text"
           required
           placeholder="请输入用户名"
@@ -16,7 +16,7 @@
         <label for="password">密码</label>
         <input
           id="password"
-          v-model="form.password"
+          v-model="formData.password"
           type="password"
           required
           placeholder="请输入密码"
@@ -34,7 +34,7 @@
 import { defineComponent, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '@/api/services/auth';
-import type { LoginRequest } from '@/api/models/auth';
+import type { LoginRequest } from '@/api/models';
 
 export default defineComponent({
   name: 'LoginForm',
@@ -42,7 +42,7 @@ export default defineComponent({
     const router = useRouter();
     const loading = ref(false);
     const error = ref('');
-    const form = reactive<LoginRequest>({
+    const formData = ref<LoginRequest>({
       username: '',
       password: ''
     });
@@ -51,23 +51,37 @@ export default defineComponent({
       try {
         loading.value = true;
         error.value = '';
-        const response = await authService.login(form);
-        
-        // 保存token和用户角色
-        localStorage.setItem('token', response.token);
+        console.log('登录请求数据:', formData.value);
+        const response = await authService.login(formData.value);
+        console.log('登录响应:', response);
+        authService.setToken(response.token);
         localStorage.setItem('userRole', response.role);
-        
-        // 登录成功后跳转到首页
-        router.push('/');
+        console.log('Token 和角色已保存');
+        console.log('当前认证状态:', authService.isAuthenticated());
+        console.log('准备跳转到首页...');
+        try {
+          await router.push({ name: 'home' });
+          console.log('跳转完成');
+        } catch (routerError) {
+          console.error('路由跳转错误:', routerError);
+          error.value = '页面跳转失败';
+        }
       } catch (err: any) {
-        error.value = err.response?.data?.message || '登录失败，请重试';
+        console.error('登录错误:', err);
+        if (err instanceof Error) {
+          error.value = err.message;
+        } else if (err.response?.data?.message) {
+          error.value = err.response.data.message;
+        } else {
+          error.value = '登录失败，请检查网络连接';
+        }
       } finally {
         loading.value = false;
       }
     };
 
     return {
-      form,
+      formData,
       loading,
       error,
       handleSubmit

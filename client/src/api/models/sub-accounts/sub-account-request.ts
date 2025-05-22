@@ -25,31 +25,31 @@ export interface SubAccountRequest {
      * @type {number}
      * @memberof SubAccountRequest
      */
-    'accountId': number;
+    accountId: number;
     /**
      * 
      * @type {string}
      * @memberof SubAccountRequest
      */
-    'accountName': string;
+    accountName: string;
     /**
      * 
      * @type {string}
      * @memberof SubAccountRequest
      */
-    'accountNumber': string;
+    accountNumber: string;
     /**
      * 
      * @type {string}
      * @memberof SubAccountRequest
      */
-    'cardType': SubAccountRequestCardTypeEnum;
+    cardType: string;
     /**
      * 
      * @type {string}
      * @memberof SubAccountRequest
      */
-    'balance': string;
+    balance: string;
 }
 
 export const SubAccountRequestCardTypeEnum = {

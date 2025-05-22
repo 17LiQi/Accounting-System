@@ -1,10 +1,12 @@
 import { apiClient } from '../client';
 import type { StatisticsResponse } from '../models/statistics/statistics-response';
 
-class StatisticsService {
+export class StatisticsService {
   async getStatistics(startDate: string, endDate: string): Promise<StatisticsResponse> {
     const response = await apiClient.get('/statistics', {
       params: {
+        year: new Date().getFullYear(),
+        period: 'MONTHLY',
         startDate,
         endDate
       }

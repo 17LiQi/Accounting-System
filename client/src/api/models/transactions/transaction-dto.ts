@@ -39,11 +39,11 @@ export interface TransactionDTO {
      */
     'typeId': number;
     /**
-     * 是否为收入（由typeId关联的transaction_types.is_income自动生成）
+     * 
      * @type {boolean}
      * @memberof TransactionDTO
      */
-    'isIncome'?: boolean;
+    'isIncome': boolean;
     /**
      * 
      * @type {number}
@@ -68,5 +68,10 @@ export interface TransactionDTO {
      * @memberof TransactionDTO
      */
     'remarks'?: string;
+}
+
+export interface TransactionResponse {
+  transactions: TransactionDTO[];
+  total: number;
 }
 

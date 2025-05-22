@@ -71,42 +71,6 @@ export const UsersApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @summary 创建用户
-         * @param {UserRequest} userRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersCreate_1: async (userRequest: UserRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userRequest' is not null or undefined
-            assertParamExists('usersCreate_1', 'userRequest', userRequest)
-            const localVarPath = `/users`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(userRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 删除用户
          * @param {number} userId 用户 ID
          * @param {*} [options] Override http request option.
@@ -141,75 +105,11 @@ export const UsersApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @summary 删除用户
-         * @param {number} userId 用户 ID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersDelete_2: async (userId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('usersDelete_2', 'userId', userId)
-            const localVarPath = `/users/{userId}`
-                .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 列出用户
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         usersList: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/users`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 列出用户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersList_3: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/users`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -273,46 +173,6 @@ export const UsersApiAxiosParamCreator = function (configuration?: Configuration
                 options: localVarRequestOptions,
             };
         },
-        /**
-         * 
-         * @summary 更新用户
-         * @param {number} userId 用户 ID
-         * @param {UserRequest} userRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersUpdate_4: async (userId: number, userRequest: UserRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('usersUpdate_4', 'userId', userId)
-            // verify required parameter 'userRequest' is not null or undefined
-            assertParamExists('usersUpdate_4', 'userRequest', userRequest)
-            const localVarPath = `/users/{userId}`
-                .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(userRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
     }
 };
 
@@ -338,19 +198,6 @@ export const UsersApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 创建用户
-         * @param {UserRequest} userRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async usersCreate_1(userRequest: UserRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.usersCreate_1(userRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['UsersApi.usersCreate_1']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 删除用户
          * @param {number} userId 用户 ID
          * @param {*} [options] Override http request option.
@@ -360,19 +207,6 @@ export const UsersApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.usersDelete(userId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['UsersApi.usersDelete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 删除用户
-         * @param {number} userId 用户 ID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async usersDelete_2(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.usersDelete_2(userId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['UsersApi.usersDelete_2']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -389,18 +223,6 @@ export const UsersApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 列出用户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async usersList_3(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.usersList_3(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['UsersApi.usersList_3']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 更新用户
          * @param {number} userId 用户 ID
          * @param {UserRequest} userRequest 
@@ -411,20 +233,6 @@ export const UsersApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.usersUpdate(userId, userRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['UsersApi.usersUpdate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 更新用户
-         * @param {number} userId 用户 ID
-         * @param {UserRequest} userRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async usersUpdate_4(userId: number, userRequest: UserRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.usersUpdate_4(userId, userRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['UsersApi.usersUpdate_4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -449,16 +257,6 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @summary 创建用户
-         * @param {UserRequest} userRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersCreate_1(userRequest: UserRequest, options?: RawAxiosRequestConfig): AxiosPromise<UserDTO> {
-            return localVarFp.usersCreate_1(userRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 删除用户
          * @param {number} userId 用户 ID
          * @param {*} [options] Override http request option.
@@ -466,16 +264,6 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
          */
         usersDelete(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.usersDelete(userId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 删除用户
-         * @param {number} userId 用户 ID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersDelete_2(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.usersDelete_2(userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -488,15 +276,6 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @summary 列出用户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersList_3(options?: RawAxiosRequestConfig): AxiosPromise<UserDTO> {
-            return localVarFp.usersList_3(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 更新用户
          * @param {number} userId 用户 ID
          * @param {UserRequest} userRequest 
@@ -505,17 +284,6 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
          */
         usersUpdate(userId: number, userRequest: UserRequest, options?: RawAxiosRequestConfig): AxiosPromise<UserDTO> {
             return localVarFp.usersUpdate(userId, userRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 更新用户
-         * @param {number} userId 用户 ID
-         * @param {UserRequest} userRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        usersUpdate_4(userId: number, userRequest: UserRequest, options?: RawAxiosRequestConfig): AxiosPromise<UserDTO> {
-            return localVarFp.usersUpdate_4(userId, userRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -541,18 +309,6 @@ export class UsersApi extends BaseAPI {
 
     /**
      * 
-     * @summary 创建用户
-     * @param {UserRequest} userRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UsersApi
-     */
-    public usersCreate_1(userRequest: UserRequest, options?: RawAxiosRequestConfig) {
-        return UsersApiFp(this.configuration).usersCreate_1(userRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 删除用户
      * @param {number} userId 用户 ID
      * @param {*} [options] Override http request option.
@@ -561,18 +317,6 @@ export class UsersApi extends BaseAPI {
      */
     public usersDelete(userId: number, options?: RawAxiosRequestConfig) {
         return UsersApiFp(this.configuration).usersDelete(userId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 删除用户
-     * @param {number} userId 用户 ID
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UsersApi
-     */
-    public usersDelete_2(userId: number, options?: RawAxiosRequestConfig) {
-        return UsersApiFp(this.configuration).usersDelete_2(userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -588,17 +332,6 @@ export class UsersApi extends BaseAPI {
 
     /**
      * 
-     * @summary 列出用户
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UsersApi
-     */
-    public usersList_3(options?: RawAxiosRequestConfig) {
-        return UsersApiFp(this.configuration).usersList_3(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 更新用户
      * @param {number} userId 用户 ID
      * @param {UserRequest} userRequest 
@@ -608,19 +341,6 @@ export class UsersApi extends BaseAPI {
      */
     public usersUpdate(userId: number, userRequest: UserRequest, options?: RawAxiosRequestConfig) {
         return UsersApiFp(this.configuration).usersUpdate(userId, userRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 更新用户
-     * @param {number} userId 用户 ID
-     * @param {UserRequest} userRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UsersApi
-     */
-    public usersUpdate_4(userId: number, userRequest: UserRequest, options?: RawAxiosRequestConfig) {
-        return UsersApiFp(this.configuration).usersUpdate_4(userId, userRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

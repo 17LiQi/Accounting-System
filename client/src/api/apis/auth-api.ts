@@ -27,6 +27,8 @@ import type { ApiError } from '../models';
 import type { LoginRequest } from '../models';
 // @ts-ignore
 import type { LoginResponse } from '../models';
+// @ts-ignore
+import type { LogoutResponse } from '../models';
 /**
  * AuthApi - axios parameter creator
  * @export
@@ -55,8 +57,6 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -71,16 +71,12 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary 用户登录
-         * @param {LoginRequest} loginRequest 
+         * @summary 用户登出
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authLogin_1: async (loginRequest: LoginRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'loginRequest' is not null or undefined
-            assertParamExists('authLogin_1', 'loginRequest', loginRequest)
-            const localVarPath = `/login`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        authLogout: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/auth/logout`;
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
             if (configuration) {
@@ -91,20 +87,15 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(loginRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
                 options: localVarRequestOptions,
             };
-        },
+        }
     }
 };
 
@@ -130,17 +121,16 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 用户登录
-         * @param {LoginRequest} loginRequest 
+         * @summary 用户登出
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async authLogin_1(loginRequest: LoginRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authLogin_1(loginRequest, options);
+        async authLogout(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LogoutResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authLogout(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthApi.authLogin_1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthApi.authLogout']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
+        }
     }
 };
 
@@ -163,14 +153,13 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary 用户登录
-         * @param {LoginRequest} loginRequest 
+         * @summary 用户登出
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authLogin_1(loginRequest: LoginRequest, options?: RawAxiosRequestConfig): AxiosPromise<LoginResponse> {
-            return localVarFp.authLogin_1(loginRequest, options).then((request) => request(axios, basePath));
-        },
+        authLogout(options?: RawAxiosRequestConfig): AxiosPromise<LogoutResponse> {
+            return localVarFp.authLogout(options).then((request) => request(axios, basePath));
+        }
     };
 };
 
@@ -192,17 +181,15 @@ export class AuthApi extends BaseAPI {
     public authLogin(loginRequest: LoginRequest, options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).authLogin(loginRequest, options).then((request) => request(this.axios, this.basePath));
     }
-
     /**
      * 
-     * @summary 用户登录
-     * @param {LoginRequest} loginRequest 
+     * @summary 用户登出
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthApi
      */
-    public authLogin_1(loginRequest: LoginRequest, options?: RawAxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authLogin_1(loginRequest, options).then((request) => request(this.axios, this.basePath));
+    public authLogout(options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authLogout(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

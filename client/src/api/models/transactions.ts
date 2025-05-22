@@ -1,16 +1,18 @@
 export interface TransactionDTO {
   transactionId: number;
-  accountId: number;
+  time: string;
   typeId: number;
-  amount: number;
-  description: string;
-  transactionDate: string;
+  isIncome: boolean;
+  subAccountId: number;
+  amount: string;
+  userId: number;
+  remarks?: string;
 }
 
 export interface TransactionRequest {
-  accountId: number;
+  time: string;
   typeId: number;
-  amount: number;
-  description: string;
-  transactionDate: string;
+  subAccountId: number;
+  amount: string;
+  remarks?: string;
 } 

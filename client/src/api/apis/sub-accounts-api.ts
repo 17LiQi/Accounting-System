@@ -71,75 +71,11 @@ export const SubAccountsApiAxiosParamCreator = function (configuration?: Configu
         },
         /**
          * 
-         * @summary 获取子账户详情
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSubAccount_1: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getSubAccount_1', 'id', id)
-            const localVarPath = `/sub-accounts/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 列出子账户
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getSubAccounts: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/sub-accounts`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 列出子账户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSubAccounts_2: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/sub-accounts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -201,42 +137,6 @@ export const SubAccountsApiAxiosParamCreator = function (configuration?: Configu
         },
         /**
          * 
-         * @summary 创建子账户
-         * @param {SubAccountRequest} subAccountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        subAccountsCreate_3: async (subAccountRequest: SubAccountRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'subAccountRequest' is not null or undefined
-            assertParamExists('subAccountsCreate_3', 'subAccountRequest', subAccountRequest)
-            const localVarPath = `/sub-accounts`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(subAccountRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 删除子账户
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -269,40 +169,7 @@ export const SubAccountsApiAxiosParamCreator = function (configuration?: Configu
                 options: localVarRequestOptions,
             };
         },
-        /**
-         * 
-         * @summary 删除子账户
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        subAccountsDelete_4: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('subAccountsDelete_4', 'id', id)
-            const localVarPath = `/sub-accounts/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
+        
         /**
          * 
          * @summary 更新子账户
@@ -342,47 +209,7 @@ export const SubAccountsApiAxiosParamCreator = function (configuration?: Configu
                 url: toPathString(localVarUrlObj),
                 options: localVarRequestOptions,
             };
-        },
-        /**
-         * 
-         * @summary 更新子账户
-         * @param {string} id 
-         * @param {SubAccountRequest} subAccountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        subAccountsUpdate_5: async (id: string, subAccountRequest: SubAccountRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('subAccountsUpdate_5', 'id', id)
-            // verify required parameter 'subAccountRequest' is not null or undefined
-            assertParamExists('subAccountsUpdate_5', 'subAccountRequest', subAccountRequest)
-            const localVarPath = `/sub-accounts/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(subAccountRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
+        }
     }
 };
 
@@ -408,19 +235,6 @@ export const SubAccountsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 获取子账户详情
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getSubAccount_1(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubAccountDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSubAccount_1(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.getSubAccount_1']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 列出子账户
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -429,18 +243,6 @@ export const SubAccountsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getSubAccounts(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.getSubAccounts']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 列出子账户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getSubAccounts_2(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubAccountDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSubAccounts_2(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.getSubAccounts_2']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -458,19 +260,6 @@ export const SubAccountsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 创建子账户
-         * @param {SubAccountRequest} subAccountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async subAccountsCreate_3(subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubAccount>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.subAccountsCreate_3(subAccountRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.subAccountsCreate_3']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 删除子账户
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -480,19 +269,6 @@ export const SubAccountsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.subAccountsDelete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.subAccountsDelete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 删除子账户
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async subAccountsDelete_4(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.subAccountsDelete_4(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.subAccountsDelete_4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -508,21 +284,7 @@ export const SubAccountsApiFp = function(configuration?: Configuration) {
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.subAccountsUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 更新子账户
-         * @param {string} id 
-         * @param {SubAccountRequest} subAccountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async subAccountsUpdate_5(id: string, subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubAccount>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.subAccountsUpdate_5(id, subAccountRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SubAccountsApi.subAccountsUpdate_5']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
+        }
     }
 };
 
@@ -545,31 +307,12 @@ export const SubAccountsApiFactory = function (configuration?: Configuration, ba
         },
         /**
          * 
-         * @summary 获取子账户详情
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSubAccount_1(id: string, options?: RawAxiosRequestConfig): AxiosPromise<SubAccountDTO> {
-            return localVarFp.getSubAccount_1(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 列出子账户
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getSubAccounts(options?: RawAxiosRequestConfig): AxiosPromise<SubAccountDTO> {
             return localVarFp.getSubAccounts(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 列出子账户
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSubAccounts_2(options?: RawAxiosRequestConfig): AxiosPromise<SubAccountDTO> {
-            return localVarFp.getSubAccounts_2(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -583,16 +326,6 @@ export const SubAccountsApiFactory = function (configuration?: Configuration, ba
         },
         /**
          * 
-         * @summary 创建子账户
-         * @param {SubAccountRequest} subAccountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        subAccountsCreate_3(subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig): AxiosPromise<SubAccount> {
-            return localVarFp.subAccountsCreate_3(subAccountRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 删除子账户
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -600,16 +333,6 @@ export const SubAccountsApiFactory = function (configuration?: Configuration, ba
          */
         subAccountsDelete(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.subAccountsDelete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 删除子账户
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        subAccountsDelete_4(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.subAccountsDelete_4(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -621,17 +344,6 @@ export const SubAccountsApiFactory = function (configuration?: Configuration, ba
          */
         subAccountsUpdate(id: string, subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig): AxiosPromise<SubAccount> {
             return localVarFp.subAccountsUpdate(id, subAccountRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 更新子账户
-         * @param {string} id 
-         * @param {SubAccountRequest} subAccountRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        subAccountsUpdate_5(id: string, subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig): AxiosPromise<SubAccount> {
-            return localVarFp.subAccountsUpdate_5(id, subAccountRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -657,18 +369,6 @@ export class SubAccountsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 获取子账户详情
-     * @param {string} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SubAccountsApi
-     */
-    public getSubAccount_1(id: string, options?: RawAxiosRequestConfig) {
-        return SubAccountsApiFp(this.configuration).getSubAccount_1(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 列出子账户
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -676,17 +376,6 @@ export class SubAccountsApi extends BaseAPI {
      */
     public getSubAccounts(options?: RawAxiosRequestConfig) {
         return SubAccountsApiFp(this.configuration).getSubAccounts(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 列出子账户
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SubAccountsApi
-     */
-    public getSubAccounts_2(options?: RawAxiosRequestConfig) {
-        return SubAccountsApiFp(this.configuration).getSubAccounts_2(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -703,18 +392,6 @@ export class SubAccountsApi extends BaseAPI {
 
     /**
      * 
-     * @summary 创建子账户
-     * @param {SubAccountRequest} subAccountRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SubAccountsApi
-     */
-    public subAccountsCreate_3(subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig) {
-        return SubAccountsApiFp(this.configuration).subAccountsCreate_3(subAccountRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 删除子账户
      * @param {string} id 
      * @param {*} [options] Override http request option.
@@ -723,18 +400,6 @@ export class SubAccountsApi extends BaseAPI {
      */
     public subAccountsDelete(id: string, options?: RawAxiosRequestConfig) {
         return SubAccountsApiFp(this.configuration).subAccountsDelete(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 删除子账户
-     * @param {string} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SubAccountsApi
-     */
-    public subAccountsDelete_4(id: string, options?: RawAxiosRequestConfig) {
-        return SubAccountsApiFp(this.configuration).subAccountsDelete_4(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -748,19 +413,6 @@ export class SubAccountsApi extends BaseAPI {
      */
     public subAccountsUpdate(id: string, subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig) {
         return SubAccountsApiFp(this.configuration).subAccountsUpdate(id, subAccountRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 更新子账户
-     * @param {string} id 
-     * @param {SubAccountRequest} subAccountRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SubAccountsApi
-     */
-    public subAccountsUpdate_5(id: string, subAccountRequest: SubAccountRequest, options?: RawAxiosRequestConfig) {
-        return SubAccountsApiFp(this.configuration).subAccountsUpdate_5(id, subAccountRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
