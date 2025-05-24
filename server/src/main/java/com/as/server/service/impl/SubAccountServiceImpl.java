@@ -1,25 +1,33 @@
 package com.as.server.service.impl;
 
 import com.as.server.entity.SubAccount;
+import com.as.server.entity.User;
 import com.as.server.exception.EntityNotFoundException;
 import com.as.server.repository.SubAccountRepository;
 import com.as.server.repository.TransactionRepository;
+import com.as.server.repository.UserRepository;
 import com.as.server.service.SubAccountService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+
 public class SubAccountServiceImpl implements SubAccountService {
+
+    private static final Logger log = LoggerFactory.getLogger(SubAccountServiceImpl.class);
 
     private final SubAccountRepository subAccountRepository;
 
     private final TransactionRepository transactionRepository;
+
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -32,7 +40,21 @@ public class SubAccountServiceImpl implements SubAccountService {
             throw new IllegalArgumentException("Account number already exists");
         }
         log.info("Creating sub-account: {}", subAccount.getAccountName());
-        return subAccountRepository.save(subAccount);
+
+        // 保存子账号基本信息
+        SubAccount savedSubAccount = subAccountRepository.save(subAccount);
+
+        // 处理用户关联
+        if (subAccount.getUsers() != null && !subAccount.getUsers().isEmpty()) {
+            Set<User> users = subAccount.getUsers();
+            for (User user : users) {
+                User existingUser = userRepository.findById(user.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + user.getUserId()));
+                savedSubAccount.addUser(existingUser);
+            }
+        }
+        
+        return subAccountRepository.save(savedSubAccount);
     }
 
     @Override
@@ -65,6 +87,17 @@ public class SubAccountServiceImpl implements SubAccountService {
         existing.setAccountNumber(subAccount.getAccountNumber());
         existing.setCardType(subAccount.getCardType());
         existing.setBalance(subAccount.getBalance());
+        
+        // 更新用户关联
+        if (subAccount.getUsers() != null) {
+            existing.getUsers().clear();
+            for (User user : subAccount.getUsers()) {
+                User existingUser = userRepository.findById(user.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + user.getUserId()));
+                existing.addUser(existingUser);
+            }
+        }
+        
         return subAccountRepository.save(existing);
     }
 
@@ -74,6 +107,9 @@ public class SubAccountServiceImpl implements SubAccountService {
         log.info("Deleting sub-account with id: {}", id);
         if (!subAccountRepository.existsById(id)) {
             throw new EntityNotFoundException("SubAccount not found with id: " + id);
+        }
+        if (hasTransactions(id)) {
+            throw new IllegalStateException("Cannot delete sub-account with associated transactions");
         }
         subAccountRepository.deleteById(id);
     }

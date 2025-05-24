@@ -28,8 +28,8 @@ public enum Period {
 
     @JsonCreator
     public static Period fromValue(String value) {
-        for (Period b : Period.values()){
-            if (b.value.equals(value)){
+        for (Period b : Period.values()) {
+            if (b.value.equalsIgnoreCase(value)) {
                 return b;
             }
         }

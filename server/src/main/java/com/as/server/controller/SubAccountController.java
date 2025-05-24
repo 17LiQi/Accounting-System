@@ -139,9 +139,26 @@ public class SubAccountController implements SubAccountsApi {
         Account account = new Account();
         account.setAccountId(request.getAccountId() != null ? request.getAccountId() : 0);
         subAccount.setAccount(account);
-        User user = new User();
-        user.setUserId(userId);
-        subAccount.addUser(user);
+
+        // 获取当前用户权限
+        Authentication auth = getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin && request.getUserIds() != null && !request.getUserIds().isEmpty()) {
+            // 管理员指定用户
+            request.getUserIds().forEach(id -> {
+                User user = new User();
+                user.setUserId(id);
+                subAccount.addUser(user);
+            });
+        } else {
+            // 普通用户或未指定用户时，关联当前用户
+            User user = new User();
+            user.setUserId(userId);
+            subAccount.addUser(user);
+        }
+
         return subAccount;
     }
 
@@ -154,8 +171,23 @@ public class SubAccountController implements SubAccountsApi {
         dto.setAccountId(subAccount.getAccount() != null ? subAccount.getAccount().getAccountId() : null);
         dto.setAccountName(subAccount.getAccountName());
         dto.setAccountNumber(subAccount.getAccountNumber());
-        dto.setCardType(subAccount.getCardType());
+        dto.setCardType(subAccount.getCardType() != null ? CardType.valueOf(subAccount.getCardType().name()) : null);
         dto.setBalance(subAccount.getBalance() != null ? subAccount.getBalance().toString() : null);
+
+        // 添加 users 映射
+        if (subAccount.getUsers() != null && !subAccount.getUsers().isEmpty()) {
+            List<SubAccountDTO.UserDTO> userDTOs = subAccount.getUsers().stream()
+                    .map(user -> {
+                        SubAccountDTO.UserDTO userDTO = new SubAccountDTO.UserDTO();
+                        userDTO.setUserId(user.getUserId());
+                        userDTO.setUsername(user.getUsername());
+                        userDTO.setIsAdmin(user.getIsAdmin());
+                        return userDTO;
+                    })
+                    .collect(Collectors.toList());
+            dto.setUsers(userDTOs);
+        }
+
         return dto;
     }
 }

@@ -57,6 +57,7 @@ public class StatisticsController implements StatisticsApi {
         validatePeriodParams(month, week, day, periodEnum);
 
         Authentication auth = getContext().getAuthentication();
+        log.debug("Authenticated user: name={}, authorities={}", auth.getName(), auth.getAuthorities());
         Integer effectiveUserId = userId;
         if (userId == null) {
             effectiveUserId = Integer.valueOf(auth.getName());

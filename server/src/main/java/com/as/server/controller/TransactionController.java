@@ -24,7 +24,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +32,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
@@ -89,7 +87,7 @@ public class TransactionController implements TransactionsApi {
         Authentication auth = getContext().getAuthentication();
         Integer currentUserId = null;
         if (auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER"))) {
-            currentUserId = ((User) auth.getPrincipal()).getUserId();
+            currentUserId = Integer.valueOf(auth.getName());
             if (userId != null && !userId.equals(currentUserId)) {
                 throw new AccessDeniedException("Users can only view their own transactions");
             }
@@ -183,16 +181,18 @@ public class TransactionController implements TransactionsApi {
             throw new IllegalArgumentException("Transaction request cannot be null");
         }
         Transaction transaction = new Transaction();
-        transaction.setTime(request.getTime() != null ? request.getTime().toLocalDateTime() : LocalDateTime.now());
+        transaction.setTime(request.getTime() != null ? 
+            request.getTime().withOffsetSameInstant(ZoneOffset.ofHours(8)).toLocalDateTime() : 
+            LocalDateTime.now(ZoneOffset.ofHours(8)));
         TransactionType type = new TransactionType();
-        type.setTypeId(request.getTypeId() != null ? request.getTypeId() : 0); // Default to 0 if null
+        type.setTypeId(request.getTypeId() != null ? request.getTypeId() : 0);
         transaction.setTransactionType(type);
         SubAccount subAccount = new SubAccount();
-        subAccount.setSubAccountId(request.getSubAccountId() != null ? request.getSubAccountId() : 0); // Default to 0
+        subAccount.setSubAccountId(request.getSubAccountId() != null ? request.getSubAccountId() : 0);
         transaction.setSubAccount(subAccount);
         transaction.setAmount(request.getAmount() != null ? new BigDecimal(request.getAmount()) : BigDecimal.ZERO);
         User user = new User();
-        user.setUserId(userId != null ? userId : 0); // Default to 0 if null
+        user.setUserId(userId != null ? userId : 0);
         transaction.setUser(user);
         transaction.setRemarks(request.getRemarks());
         return transaction;
@@ -204,7 +204,9 @@ public class TransactionController implements TransactionsApi {
         }
         TransactionDTO dto = new TransactionDTO();
         dto.setTransactionId(transaction.getTransactionId());
-        dto.setTime(transaction.getTime() != null ? transaction.getTime().atOffset(ZoneOffset.UTC) : null);
+        dto.setTime(transaction.getTime() != null ? 
+            transaction.getTime().atOffset(ZoneOffset.ofHours(8)).withOffsetSameInstant(ZoneOffset.UTC) : 
+            null);
         dto.setTypeId(transaction.getTransactionType() != null ? transaction.getTransactionType().getTypeId() : null);
         dto.setIsIncome(transaction.getTransactionType() != null ? transaction.getTransactionType().getIsIncome() : false);
         dto.setSubAccountId(transaction.getSubAccount() != null ? transaction.getSubAccount().getSubAccountId() : null);

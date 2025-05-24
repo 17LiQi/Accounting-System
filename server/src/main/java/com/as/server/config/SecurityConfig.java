@@ -32,12 +32,22 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests(auth -> auth
-                        .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // 允许所有OPTIONS请求
+                        .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .antMatchers("/login").permitAll()
                         .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .antMatchers("/users/**", "/accounts/**", "/sub-accounts/**", "/transaction-types/**").hasRole("ADMIN")
+
+                        .antMatchers(HttpMethod.GET, "/accounts/**").hasAnyRole("ADMIN", "USER")
+                        .antMatchers("/accounts/**").hasRole("ADMIN")
+
+                        .antMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "USER")       // 允许 /users GET 普通用户访问
+                        .antMatchers(HttpMethod.GET, "/users/*").hasAnyRole("ADMIN", "USER")    // 允许 /users/{id} GET 普通用户访问
+                        .antMatchers("/users/**").hasRole("ADMIN")                             // 其他 /users 路径需要 ADMIN
+
                         .antMatchers("/sub-accounts/**").hasAnyRole("ADMIN", "USER")
-                        .antMatchers("/transactions/**", "/statistics").hasAnyRole("ADMIN", "USER")
+                        
+                        .antMatchers(HttpMethod.GET, "/transaction-types/**").hasAnyRole("ADMIN", "USER")
+                        .antMatchers("/transaction-types/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling()

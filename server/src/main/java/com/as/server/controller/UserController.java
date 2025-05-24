@@ -17,13 +17,10 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
-@PreAuthorize("hasRole('ADMIN')")
 public class UserController implements UsersApi {
 
     private final UserService userService;
-
     private final EntityMapper entityMapper;
-
     private final PasswordEncoder passwordEncoder;
 
     public UserController(UserService userService, EntityMapper entityMapper, PasswordEncoder passwordEncoder) {
@@ -34,6 +31,7 @@ public class UserController implements UsersApi {
 
     @Override
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> usersCreate(@RequestBody UserRequest request) {
         User user = entityMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -43,6 +41,7 @@ public class UserController implements UsersApi {
 
     @Override
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<UserDTO>> usersList() {
         List<User> users = userService.findAll();
         List<UserDTO> userDTOs = users.stream()
@@ -50,9 +49,9 @@ public class UserController implements UsersApi {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(userDTOs);
     }
-// 新增
+
     @GetMapping("/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<UserDTO> usersGet(@PathVariable Integer userId) {
         User user = userService.findById(userId);
         return ResponseEntity.ok(entityMapper.toUserDTO(user));
@@ -60,6 +59,7 @@ public class UserController implements UsersApi {
 
     @Override
     @PutMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<UserDTO> usersUpdate(@PathVariable Integer userId, @RequestBody UserRequest request) {
         User user = entityMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -69,6 +69,7 @@ public class UserController implements UsersApi {
 
     @Override
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> usersDelete(@PathVariable Integer userId) {
         if (userService.hasTransactions(userId)) {
             throw new ConflictException("User has associated transactions");
@@ -76,4 +77,5 @@ public class UserController implements UsersApi {
         userService.delete(userId);
         return ResponseEntity.noContent().build();
     }
+
 }

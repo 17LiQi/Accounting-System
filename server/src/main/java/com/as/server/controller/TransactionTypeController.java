@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/transaction-types")
-@PreAuthorize("hasRole('ADMIN')")
 public class TransactionTypeController implements TransactionTypesApi {
 
     private final TransactionTypeService transactionTypeService;

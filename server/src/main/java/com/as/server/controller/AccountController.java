@@ -42,7 +42,7 @@ public class AccountController implements AccountsApi {
 
     @Override
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<AccountDTO>> accountsList() {
         List<Account> accounts = accountService.findAll();
         List<AccountDTO> accountDTOs = accounts.stream()
@@ -53,7 +53,7 @@ public class AccountController implements AccountsApi {
 
     @Override
     @GetMapping("/{accountId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<AccountDTO> accountsGet(@PathVariable("accountId") Integer accountId) {
         Account account = accountService.findById(accountId);
         AccountDTO accountDTO = entityMapper.toAccountDTO(account);

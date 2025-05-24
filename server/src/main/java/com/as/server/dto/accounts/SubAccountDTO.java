@@ -44,7 +44,7 @@ public class SubAccountDTO {
    * Get subAccountId
    * @return subAccountId
   */
-  @NotNull 
+  @NotNull
   @Schema(name = "subAccountId", required = true)
   public Integer getSubAccountId() {
     return subAccountId;
@@ -63,7 +63,7 @@ public class SubAccountDTO {
    * Get accountId
    * @return accountId
   */
-  @NotNull 
+  @NotNull
   @Schema(name = "accountId", required = true)
   public Integer getAccountId() {
     return accountId;
@@ -82,7 +82,7 @@ public class SubAccountDTO {
    * Get accountName
    * @return accountName
   */
-  @NotNull @Size(max = 100) 
+  @NotNull @Size(max = 100)
   @Schema(name = "accountName", required = true)
   public String getAccountName() {
     return accountName;
@@ -101,7 +101,7 @@ public class SubAccountDTO {
    * Get accountNumber
    * @return accountNumber
   */
-  @NotNull @Size(max = 50) 
+  @NotNull @Size(max = 50)
   @Schema(name = "accountNumber", required = true)
   public String getAccountNumber() {
     return accountNumber;
@@ -120,7 +120,7 @@ public class SubAccountDTO {
    * Get cardType
    * @return cardType
   */
-  @NotNull 
+  @NotNull
   @Schema(name = "cardType", required = true)
   public CardType getCardType() {
     return cardType;
@@ -139,7 +139,7 @@ public class SubAccountDTO {
    * Get balance
    * @return balance
   */
-  @NotNull @Pattern(regexp = "^\\d+(\\.\\d{2})?$") 
+  @NotNull @Pattern(regexp = "^\\d+(\\.\\d{2})?$")
   @Schema(name = "balance", required = true)
   public String getBalance() {
     return balance;
