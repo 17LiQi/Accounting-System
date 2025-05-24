@@ -3,14 +3,9 @@
     <div class="header">
       <h1>账户管理</h1>
       <div class="header-actions">
-        <button @click="testConnection" class="test-btn">测试连接</button>
-        <button @click="debugFetchAccounts" class="debug-btn">调试获取账户</button>
+        <button @click="debugUserAssociations" class="debug-btn">调试: 打印用户关联</button>
         <button @click="showCreateModal = true" class="create-btn">创建账户</button>
       </div>
-    </div>
-
-    <div v-if="debugInfo" class="debug-info">
-      <pre>{{ JSON.stringify(debugInfo, null, 2) }}</pre>
     </div>
 
     <div v-if="loading" class="loading">
@@ -35,7 +30,7 @@
           </div>
           <div class="account-info">
             <p><strong>类型：</strong>{{ account.type }}</p>
-            <p><strong>所属用户：</strong>{{ account.username }}</p>
+            <p><strong>所属用户：</strong>{{ getAssociatedUsers(subAccounts[account.accountId]) }}</p>
             <div v-if="subAccounts[account.accountId]?.length > 0" class="sub-accounts">
               <h4>子账户列表：</h4>
               <div v-for="subAccount in subAccounts[account.accountId]" :key="subAccount.subAccountId" class="sub-account-item">
@@ -44,6 +39,7 @@
                   <p><strong>账号：</strong>{{ subAccount.accountNumber }}</p>
                   <p><strong>卡类型：</strong>{{ subAccount.cardType }}</p>
                   <p><strong>余额：</strong>¥{{ Number(subAccount.balance).toFixed(2) }}</p>
+                  <p><strong>关联用户：</strong>{{ getAssociatedUsers([subAccount]) }}</p>
                 </div>
                 <div class="sub-account-actions">
                   <button @click="viewSubAccountDetails(subAccount)" class="view-btn">查看详情</button>
@@ -104,14 +100,22 @@ import type { SubAccountDTO } from '@/api/models/sub-accounts/sub-account-dto';
 import type { AccountType } from '@/api/models/accounts/account-type';
 import { accountsService } from '@/api/services/accounts';
 import { useRouter } from 'vue-router';
+import { usersService } from '@/api/services/users';
+import type { UserDTO } from '@/api/models/user/user-dto';
+import { subAccountsService } from '@/api/services/subAccounts';
+
+// 扩展 SubAccountDTO 类型以包含用户信息
+interface SubAccountWithUsers extends SubAccountDTO {
+  users?: UserDTO[];
+}
 
 const accountsStore = useAccountsStore();
+const router = useRouter();
 const loading = ref(false);
 const error = ref<string | null>(null);
 const showCreateModal = ref(false);
 const editingAccount = ref<AccountDTO | null>(null);
 const debugInfo = ref<any>(null);
-const router = useRouter();
 
 const form = ref<AccountRequest>({
   accountName: '',
@@ -120,7 +124,8 @@ const form = ref<AccountRequest>({
 });
 
 const accounts = ref<AccountDTO[]>([]);
-const subAccounts = ref<Record<number, SubAccountDTO[]>>({});
+const users = ref<UserDTO[]>([]);
+const subAccounts = ref<Record<number, SubAccountWithUsers[]>>({});
 
 const getAccountTypeName = (type: string | undefined): string => {
   if (!type) return '未知';
@@ -149,88 +154,84 @@ const getAccountRequestType = (type: string | undefined): AccountRequestTypeEnum
   return typeMap[type] || AccountRequestTypeEnum.Bank;
 };
 
-const testConnection = async () => {
-  loading.value = true;
-  error.value = null;
-  debugInfo.value = null;
-  try {
-    console.log('开始测试连接...');
-    const result = await accountsService.testConnection();
-    console.log('测试连接成功:', result);
-    debugInfo.value = {
-      success: true,
-      result: result
-    };
-  } catch (err: any) {
-    console.error('测试连接失败:', err);
-    error.value = err.message || '测试连接失败';
-    debugInfo.value = {
-      success: false,
-      error: err
-    };
-  } finally {
-    loading.value = false;
-  }
-};
-
-const debugFetchAccounts = async () => {
-  loading.value = true;
-  error.value = null;
-  debugInfo.value = null;
-  try {
-    console.log('开始获取账户信息...');
-    const result = await accountsStore.fetchAccounts();
-    console.log('获取账户信息成功:', result);
-    debugInfo.value = {
-      success: true,
-      accounts: result,
-      storeState: {
-        accounts: accountsStore.accounts,
-        loading: accountsStore.loading,
-        error: accountsStore.error
-      }
-    };
-  } catch (err: any) {
-    console.error('获取账户信息失败:', err);
-    error.value = err.message || '获取账户列表失败';
-    debugInfo.value = {
-      success: false,
-      error: err,
-      storeState: {
-        accounts: accountsStore.accounts,
-        loading: accountsStore.loading,
-        error: accountsStore.error
-      }
-    };
-  } finally {
-    loading.value = false;
-  }
+const getUserName = (userId: number): string => {
+  const user = users.value.find(u => u.userId === userId);
+  return user ? user.username : '未知用户';
 };
 
 const fetchAccounts = async () => {
   loading.value = true;
   error.value = null;
   try {
+    // 首先获取所有用户信息
+    const usersList = await usersService.getUsers();
+    users.value = usersList;
+    console.log('获取到的用户列表:', usersList);
+
     // 获取所有账户
-    const accountsResult = await accountsService.getAccounts();
-    accounts.value = accountsResult;
+    const accountsList = await accountsService.getAccounts();
+    console.log('获取到的账户列表:', accountsList);
+    accounts.value = accountsList;
 
     // 获取所有子账户
     const allSubAccounts = await accountsService.getAllSubAccounts();
+    console.log('获取到的子账户列表:', allSubAccounts);
     
     // 按账户ID分组子账户
-    subAccounts.value = accountsResult.reduce((acc, account) => {
+    subAccounts.value = accountsList.reduce((acc, account) => {
       acc[account.accountId] = allSubAccounts.filter(
         subAccount => subAccount.accountId === account.accountId
       );
       return acc;
-    }, {} as Record<number, SubAccountDTO[]>);
+    }, {} as Record<number, SubAccountWithUsers[]>);
+
+    // 为每个子账户关联用户信息
+    for (const account of accountsList) {
+      const accountSubAccounts = subAccounts.value[account.accountId] || [];
+      for (const subAccount of accountSubAccounts) {
+        try {
+          if (!subAccount.subAccountId) {
+            console.error('子账户ID无效:', subAccount);
+            continue;
+          }
+
+          // 获取子账户详情
+          const subAccountDetail = await accountsService.getSubAccount(subAccount.subAccountId);
+          console.log(`子账户 ${subAccount.subAccountId} 的原始数据:`, subAccountDetail);
+          
+          // 处理用户信息
+          const subAccountUsers = (subAccountDetail as any)?.users || [];
+          subAccount.users = Array.isArray(subAccountUsers) ? subAccountUsers : Array.from(subAccountUsers);
+          
+          // 如果没有关联用户，则关联账户所属用户
+          if (!subAccount.users || subAccount.users.length === 0) {
+            // 如果账户没有指定用户，使用第一个用户作为默认用户
+            const defaultUser = usersList[0];
+            if (defaultUser) {
+              subAccount.users = [defaultUser];
+              console.log(`为子账户 ${subAccount.subAccountId} 关联默认用户:`, defaultUser.username);
+            }
+          }
+        } catch (err) {
+          console.error(`获取子账户 ${subAccount.subAccountId} 的用户信息失败:`, err);
+          // 如果获取失败，使用默认用户
+          const defaultUser = usersList[0];
+          subAccount.users = defaultUser ? [defaultUser] : [];
+        }
+      }
+    }
 
   } catch (err: any) {
+    console.error('获取账户列表失败:', err);
     error.value = err.message || '获取账户列表失败';
   } finally {
     loading.value = false;
   }
+};
+
+const getAccountName = (accountId: number): string => {
+  const account = accounts.value.find(a => a.accountId === accountId);
+  return account ? account.accountName : '未知账户';
 };
 
 const editAccount = (account: AccountDTO) => {
@@ -282,6 +283,78 @@ const viewSubAccountDetails = (subAccount: SubAccountDTO) => {
   router.push(`/sub-accounts/${subAccount.subAccountId}`);
 };
 
+const getAssociatedUsers = (subAccounts: SubAccountWithUsers[] | undefined): string => {
+  if (!subAccounts?.length) return '无关联用户';
+  
+  const usernames = new Set<string>();
+  for (const subAccount of subAccounts) {
+    if (subAccount.users?.length) {
+      subAccount.users.forEach(user => {
+        if (typeof user === 'object' && user !== null && 'username' in user) {
+          usernames.add(user.username);
+        }
+      });
+    }
+  }
+  
+  return usernames.size > 0 ? Array.from(usernames).join(', ') : '无关联用户';
+};
+
+const debugUserAssociations = async () => {
+  console.group('账户用户关联调试信息');
+  
+  // 打印所有账户信息
+  console.log('所有账户:', accounts.value.map(account => ({
+    accountId: account.accountId,
+    accountName: account.accountName,
+    userId: account.userId,
+    username: users.value.find(u => u.userId === account.userId)?.username || '未指定用户'
+  })));
+
+  // 打印所有用户信息
+  console.log('所有用户:', users.value.map(user => ({
+    userId: user.userId,
+    username: user.username,
+    role: user.role
+  })));
+
+  // 打印子账户和用户关联信息
+  console.log('子账户用户关联:');
+  Object.entries(subAccounts.value).forEach(([accountId, subAccountsList]) => {
+    console.group(`账户 ${accountId} 的子账户:`);
+    subAccountsList.forEach(subAccount => {
+      console.log(`子账户 ${subAccount.subAccountId}:`, {
+        accountName: subAccount.accountName,
+        accountNumber: subAccount.accountNumber,
+        associatedUsers: subAccount.users?.map(user => ({
+          userId: user.userId,
+          username: user.username,
+          role: user.role
+        })) || []
+      });
+    });
+    console.groupEnd();
+  });
+
+  // 打印用户关联统计
+  const userStats = new Map<number, { username: string; role: string; subAccountCount: number }>();
+  Object.values(subAccounts.value).flat().forEach(subAccount => {
+    subAccount.users?.forEach(user => {
+      if (!userStats.has(user.userId)) {
+        userStats.set(user.userId, {
+          username: user.username,
+          role: user.role,
+          subAccountCount: 0
+        });
+      }
+      userStats.get(user.userId)!.subAccountCount++;
+    });
+  });
+  console.log('用户关联统计:', Object.fromEntries(userStats));
+
+  console.groupEnd();
+};
+
 onMounted(fetchAccounts);
 </script>
 
@@ -300,32 +373,6 @@ onMounted(fetchAccounts);
 .header-actions {
   display: flex;
   gap: 10px;
-}
-
-.test-btn {
-  background-color: #2196F3;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.test-btn:hover {
-  background-color: #1976D2;
-}
-
-.debug-btn {
-  background-color: #666;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.debug-btn:hover {
-  background-color: #555;
 }
 
 .create-btn {
@@ -396,6 +443,7 @@ onMounted(fetchAccounts);
 .account-actions {
   display: flex;
   gap: 10px;
+  margin: 10px 0;
 }
 
 .edit-btn,
@@ -572,5 +620,20 @@ onMounted(fetchAccounts);
   font-style: italic;
   text-align: center;
   padding: 10px;
+}
+
+.debug-btn {
+  background-color: #2196F3;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-right: 10px;
+}
+
+.debug-btn:hover {
+  background-color: #1976D2;
 }
 </style> 

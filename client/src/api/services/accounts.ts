@@ -60,14 +60,22 @@ class AccountsService {
   async getAccounts(): Promise<AccountDTO[]> {
     const authStore = useAuthStore();
     const isAdmin = authStore.currentUser?.role === 'ADMIN';
+    const currentUserId = authStore.currentUser?.userId;
     
-    if (!isAdmin) {
-      throw new Error('需要管理员权限');
+    if (!currentUserId) {
+      throw new Error('用户未登录');
     }
     
-    // 获取所有顶级账户
+    // 获取账户列表
     const response = await apiClient.get<AccountDTO[]>('/accounts');
-    return response.data.map(account => normalizeAccountType(account));
+    const accounts = response.data.map(account => normalizeAccountType(account));
+    
+    // 如果不是管理员，只返回当前用户的账户
+    if (!isAdmin) {
+      return accounts.filter(account => account.userId === currentUserId);
+    }
+    
+    return accounts;
   }
 
   async getAccount(id: number): Promise<AccountDTO> {

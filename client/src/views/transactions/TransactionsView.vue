@@ -3,6 +3,18 @@
     <div class="header">
       <h1>交易记录</h1>
       <div class="header-actions">
+        <select 
+          v-if="isAdmin" 
+          v-model="selectedUserId" 
+          @change="fetchTransactions" 
+          class="user-select"
+        >
+          <option :value="undefined">所有用户</option>
+          <option v-for="user in users" :key="user.userId" :value="user.userId">
+            {{ user.username }}
+          </option>
+        </select>
+        <button @click="debugFetchData" class="debug-btn">调试: 重新获取数据</button>
         <button @click="showAddTransaction = true" class="add-btn">新增交易</button>
       </div>
     </div>
@@ -51,6 +63,10 @@
                     <span class="label">类型:</span>
                     {{ getTransactionTypeName(transaction.typeId) }}
                   </p>
+                  <p class="transaction-user">
+                    <span class="label">用户:</span>
+                    {{ transaction.user?.username || '未知用户' }}
+                  </p>
                   <p class="transaction-remarks">
                     <span class="label">备注:</span>
                     {{ transaction.remarks || '无备注' }}
@@ -70,15 +86,15 @@
       <div class="pagination-controls">
         <button 
           @click="changePage(currentPage - 1)" 
-          :disabled="currentPage === 0"
+          :disabled="currentPage === 1"
           class="page-btn"
         >
           上一页
         </button>
-        <span class="page-info">第 {{ currentPage + 1 }} 页</span>
+        <span class="page-info">第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
         <button 
           @click="changePage(currentPage + 1)" 
-          :disabled="!hasMorePages"
+          :disabled="currentPage >= totalPages"
           class="page-btn"
         >
           下一页
@@ -104,63 +120,162 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { transactionsService } from '@/api/services/transactions';
 import { accountsService } from '@/api/services/accounts';
+import { usersService } from '@/api/services/users';
+import { useAuthStore } from '@/store/modules/auth';
 import type { TransactionDTO } from '@/api/models/transactions/transaction-dto';
 import type { SubAccountDTO } from '@/api/models/sub-accounts/sub-account-dto';
 import type { TransactionTypeDTO } from '@/api/models/transactions/transaction-type-dto';
+import type { UserDTO } from '@/api/models/user/user-dto';
+import type { AccountDTO } from '@/api/models/accounts/account-dto';
 import TransactionForm from '@/components/transactions/TransactionForm.vue';
 
+interface TransactionWithUser extends TransactionDTO {
+  user?: UserDTO;
+}
+
+interface TransactionQueryParams {
+  page: number;
+  size: number;
+  subAccountId?: number;
+  startDate?: string;
+  endDate?: string;
+  userId?: number;
+  sort: 'asc' | 'desc';
+}
+
 const router = useRouter();
-const loading = ref(true);
+const loading = ref(false);
 const error = ref<string | null>(null);
 const transactions = ref<TransactionDTO[]>([]);
 const subAccounts = ref<SubAccountDTO[]>([]);
 const transactionTypes = ref<TransactionTypeDTO[]>([]);
+const users = ref<UserDTO[]>([]);
 const showAddTransaction = ref(false);
-const editingTransaction = ref<TransactionDTO | undefined>();
-const currentPage = ref(0);
+const editingTransaction = ref<TransactionWithUser | undefined>();
+const currentPage = ref(1);
 const pageSize = 10;
-const hasMorePages = ref(true);
-const sortOrder = ref<'desc' | 'asc'>('asc'); // 默认正序(最近日期在前)
+const totalItems = ref(0);
+const dateRange = ref<{ start: string; end: string } | null>(null);
+const selectedSubAccountId = ref<number | undefined>(undefined);
+const selectedUserId = ref<number | undefined>(undefined);
+const sortOrder = ref<'asc' | 'desc'>('desc');
+const accounts = ref<AccountDTO[]>([]);
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.currentUser?.role === 'ADMIN');
+
+// 添加账户信息缓存
+const accountCache = ref<Record<number, { accountName: string; accountNumber: string }>>({});
+
+// 预加载账户信息
+const preloadAccountInfo = async (subAccountId: number) => {
+  if (accountCache.value[subAccountId]) return;
+  
+  try {
+    const subAccount = await accountsService.getSubAccount(subAccountId);
+    const account = await accountsService.getAccount(subAccount.accountId);
+    accountCache.value[subAccountId] = {
+      accountName: account.accountName,
+      accountNumber: subAccount.accountNumber
+    };
+  } catch (err) {
+    console.error('预加载账户信息失败:', err);
+  }
+};
 
 // 按日期分组的交易记录
 const groupedTransactions = computed(() => {
-  // 先排序
-  const sorted = [...transactions.value].sort((a, b) => {
-    const t1 = new Date(a.time).getTime();
-    const t2 = new Date(b.time).getTime();
-    return sortOrder.value === 'asc' ? t2 - t1 : t1 - t2;
-  });
   // 分组
-  const groups: { [key: string]: TransactionDTO[] } = {};
-  sorted.forEach(transaction => {
+  const groups: { [key: string]: TransactionWithUser[] } = {};
+  transactions.value.forEach(transaction => {
     const date = new Date(transaction.time).toISOString().split('T')[0];
     if (!groups[date]) {
       groups[date] = [];
     }
     groups[date].push(transaction);
   });
+  
   // 日期分组排序
   const ordered = Object.entries(groups).sort((a, b) => {
-    return sortOrder.value === 'asc'
+    return sortOrder.value === 'desc'
       ? new Date(b[0]).getTime() - new Date(a[0]).getTime()
       : new Date(a[0]).getTime() - new Date(b[0]).getTime();
   });
-  // 返回对象，保持v-for兼容
+  
   return Object.fromEntries(ordered);
 });
 
-const fetchTransactions = async () => {
+const fetchUsers = async () => {
   try {
-    loading.value = true;
-    error.value = null;
-    
-    const result = await transactionsService.getTransactions({
+    if (isAdmin.value) {
+      // 管理员获取所有用户列表
+      const usersList = await usersService.getUsers();
+      users.value = usersList;
+    } else {
+      // 普通用户只能看到自己
+      const currentUser = authStore.currentUser;
+      if (currentUser) {
+        users.value = [currentUser];
+        selectedUserId.value = currentUser.userId;
+      }
+    }
+  } catch (err) {
+    console.error('获取用户列表失败:', err);
+  }
+};
+
+const fetchTransactions = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const params: TransactionQueryParams = {
+      page: Math.max(0, currentPage.value - 1),
       size: pageSize,
-      page: currentPage.value
-    });
-    transactions.value = result.transactions;
-    hasMorePages.value = result.transactions.length === pageSize;
+      sort: sortOrder.value
+    };
+    
+    if (selectedSubAccountId.value) {
+      params.subAccountId = selectedSubAccountId.value;
+    }
+    
+    if (dateRange.value?.start) {
+      params.startDate = dateRange.value.start;
+    }
+    
+    if (dateRange.value?.end) {
+      params.endDate = dateRange.value.end;
+    }
+    
+    if (selectedUserId.value) {
+      params.userId = selectedUserId.value;
+    }
+    
+    console.log('发送请求参数:', params);
+    
+    const result = await transactionsService.getTransactions(params);
+    
+    // 获取所有相关用户的信息
+    const userIds = [...new Set(result.transactions.map(t => t.userId))];
+    const usersList = await Promise.all(
+      userIds.map(id => usersService.getUser(id))
+    );
+    
+    // 将用户信息添加到交易记录中
+    const transactionsWithUsers = result.transactions.map(transaction => ({
+      ...transaction,
+      user: usersList.find(u => u.userId === transaction.userId)
+    }));
+    
+    // 更新交易记录
+    transactions.value = transactionsWithUsers;
+    totalItems.value = result.total;
+
+    // 预加载所有交易记录的账户信息
+    await Promise.all(
+      transactionsWithUsers.map(t => preloadAccountInfo(t.subAccountId))
+    );
   } catch (err: any) {
+    console.error('获取交易记录失败:', err);
     error.value = err.message || '获取交易记录失败';
   } finally {
     loading.value = false;
@@ -183,9 +298,22 @@ const fetchTransactionTypes = async () => {
   }
 };
 
+const fetchAccounts = async () => {
+  try {
+    accounts.value = await accountsService.getAccounts();
+  } catch (err) {
+    console.error('获取账户列表失败:', err);
+  }
+};
+
 const getAccountName = (subAccountId: number) => {
-  const account = subAccounts.value.find(a => a.subAccountId === subAccountId);
-  return account ? `${account.accountName} (${account.accountNumber})` : '未知账户';
+  const subAccount = subAccounts.value.find(sa => sa.subAccountId === subAccountId);
+  if (!subAccount) return '未知账户';
+  
+  const account = accounts.value.find(a => a.accountId === subAccount.accountId);
+  if (!account) return '未知账户';
+  
+  return `${account.accountName} (${subAccount.accountNumber})`;
 };
 
 const getTransactionTypeName = (typeId: number) => {
@@ -193,12 +321,12 @@ const getTransactionTypeName = (typeId: number) => {
   return type ? type.typeName : '未知类型';
 };
 
-const editTransaction = (transaction: TransactionDTO) => {
+const editTransaction = (transaction: TransactionWithUser) => {
   editingTransaction.value = transaction;
   showAddTransaction.value = true;
 };
 
-const deleteTransaction = async (transaction: TransactionDTO) => {
+const deleteTransaction = async (transaction: TransactionWithUser) => {
   if (!confirm('确定要删除这条交易记录吗？')) return;
   
   try {
@@ -212,7 +340,7 @@ const deleteTransaction = async (transaction: TransactionDTO) => {
   }
 };
 
-const handleTransactionSubmit = async (transaction: TransactionDTO) => {
+const handleTransactionSubmit = async (transaction: TransactionWithUser) => {
   closeTransactionForm();
   await fetchTransactions();
 };
@@ -222,7 +350,7 @@ const closeTransactionForm = () => {
   editingTransaction.value = undefined;
 };
 
-const formatGroupDate = (dateString: string) => {
+const formatGroupDate = (dateString: string | number) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
@@ -239,28 +367,57 @@ const formatTime = (dateString: string) => {
   });
 };
 
+// 添加总页数计算属性
+const totalPages = computed(() => Math.ceil(totalItems.value / pageSize));
+
+// 修改changePage函数
 const changePage = async (page: number) => {
-  if (page < 0 || (page > currentPage.value && !hasMorePages.value)) return;
+  if (page < 1 || page > totalPages.value) return;
   currentPage.value = page;
   await fetchTransactions();
 };
 
+// 修改toggleSortOrder函数
 const toggleSortOrder = () => {
-  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc';
+  currentPage.value = 1; // 切换排序时重置到第一页
+  fetchTransactions();
 };
 
-const navigateToSubAccount = (transaction: TransactionDTO) => {
+const navigateToSubAccount = (transaction: TransactionWithUser) => {
   router.push({
     name: 'sub-account-details',
     params: { id: transaction.subAccountId }
   });
 };
 
+const debugFetchData = async () => {
+  try {
+    await fetchUsers();
+    await fetchTransactions();
+  } catch (err: any) {
+    console.error('调试过程出错:', err);
+  }
+};
+
+const handleUserFilterChange = () => {
+  currentPage.value = 0;
+  fetchTransactions();
+};
+
+const loadMore = async () => {
+  if (loading.value || currentPage.value * pageSize >= totalItems.value) return;
+  currentPage.value++;
+  await fetchTransactions();
+};
+
 onMounted(async () => {
   await Promise.all([
+    fetchUsers(),
     fetchTransactions(),
     fetchSubAccounts(),
-    fetchTransactionTypes()
+    fetchTransactionTypes(),
+    fetchAccounts()
   ]);
 });
 </script>
@@ -505,5 +662,27 @@ onMounted(async () => {
   color: var(--danger-color);
   text-align: center;
   padding: 20px;
+}
+
+.debug-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.debug-btn:hover {
+  background-color: #f57c00;
+}
+
+.user-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+  min-width: 120px;
 }
 </style> 

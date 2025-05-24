@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
         password
       };
       console.log('发送登录请求:', loginData);
-      const response = await apiClient.post<{ token: string; role: string }>('/login', loginData, {
+      const response = await apiClient.post<{ token: string; role: 'ADMIN' | 'USER' }>('/login', loginData, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -32,10 +32,18 @@ export const useAuthStore = defineStore('auth', () => {
       if (!responseToken) {
         throw new Error('登录响应中缺少token');
       }
+
+      // 从token中解析用户ID
+      const tokenPayload = JSON.parse(atob(responseToken.split('.')[1]));
+      const userId = parseInt(tokenPayload.sub);
+      
+      if (!userId) {
+        throw new Error('无法从token中获取用户ID');
+      }
       
       // 创建用户对象
       const user: UserDTO = {
-        userId: 0, // 这里需要从后端获取用户ID
+        userId,
         username,
         role,
         createdAt: new Date().toISOString(),
@@ -48,6 +56,8 @@ export const useAuthStore = defineStore('auth', () => {
       // 存储到 localStorage
       localStorage.setItem('token', responseToken);
       localStorage.setItem('user', JSON.stringify(user));
+      
+      console.log('存储的用户信息:', user);
       
       return { token: responseToken, user };
     } catch (err: any) {
@@ -86,6 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
     console.log('认证检查 - 本地存储:', { savedToken, savedUser });
     
     if (!savedToken || !savedUser) {
+      console.log('未找到认证信息');
       currentUser.value = null;
       token.value = null;
       return false;
@@ -95,6 +106,11 @@ export const useAuthStore = defineStore('auth', () => {
       const parsedUser = JSON.parse(savedUser);
       if (!parsedUser || typeof parsedUser !== 'object') {
         throw new Error('无效的用户信息格式');
+      }
+
+      // 验证必要的用户字段
+      if (!parsedUser.userId || !parsedUser.username || !parsedUser.role) {
+        throw new Error('用户信息不完整');
       }
       
       token.value = savedToken;

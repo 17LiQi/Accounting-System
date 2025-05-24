@@ -7,11 +7,13 @@ import { useRouter } from 'vue-router';
 import { accountsService } from '@/api/services/accounts';
 import { transactionsService } from '@/api/services/transactions';
 import { usersService } from '@/api/services/users';
+import { accountTypesService } from '@/api/services/accountTypes';
 import type { AccountDTO } from '@/api/models/accounts';
 import type { TransactionDTO } from '@/api/models/transactions/transaction-dto';
 import type { TransactionTypeDTO } from '@/api/models/transactions/transaction-type-dto';
 import type { UserDTO } from '@/api/models/user/user-dto';
 import type { SubAccountDTO } from '@/api/models/sub-accounts/sub-account-dto';
+import type { AccountTypeDTO } from '@/api/models/account-types/account-type-dto';
 import AccountForm from '@/components/accounts/AccountForm.vue';
 
 const authStore = useAuthStore();
@@ -24,17 +26,74 @@ const error = ref<string | null>(null);
 
 const currentUser = computed(() => authStore.currentUser);
 const isAdmin = computed(() => currentUser.value?.role === 'ADMIN');
-const accounts = computed(() => accountsStore.accounts);
+const accounts = ref<AccountDTO[]>([]);
+const subAccounts = ref<SubAccountDTO[]>([]);
 const recentTransactions = computed(() => transactionStore.transactions.slice(0, 5));
 const transactionTypes = ref<TransactionTypeDTO[]>([]);
-const showAddAccount = ref(false);
+const accountTypes = ref<AccountTypeDTO[]>([]);
+const users = ref<UserDTO[]>([]);
 
-const ACCOUNT_TYPES = [
-  { accountId: 1, typeId: 1, accountName: '现金账户' },
-  { accountId: 2, typeId: 2, accountName: '工商银行' },
-  { accountId: 3, typeId: 3, accountName: '支付宝账户' },
-  { accountId: 4, typeId: 4, accountName: '微信钱包' }
-] as const;
+// 按账户类型分组的子账户
+const groupedSubAccounts = computed(() => {
+  console.log('开始分组子账户...');
+  console.log('当前账户类型:', accountTypes.value);
+  console.log('当前账户列表:', accounts.value);
+  console.log('当前子账户列表:', subAccounts.value);
+
+  const groups: Record<number, SubAccountDTO[]> = {};
+  
+  // 初始化所有账户类型的分组
+  accountTypes.value.forEach(type => {
+    groups[type.typeId] = [];
+  });
+  
+  // 将子账户按类型分组
+  subAccounts.value.forEach(subAccount => {
+    const account = accounts.value.find(a => a.accountId === subAccount.accountId);
+    if (account) {
+      console.log(`处理子账户 ${subAccount.subAccountId}:`, {
+        subAccount,
+        account,
+        typeId: account.typeId
+      });
+      
+      // 确保该类型的分组存在
+      if (!groups[account.typeId]) {
+        groups[account.typeId] = [];
+      }
+      
+      // 检查是否已经添加过该子账户
+      const existingIndex = groups[account.typeId].findIndex(
+        sa => sa.subAccountId === subAccount.subAccountId
+      );
+      
+      if (existingIndex === -1) {
+        groups[account.typeId].push(subAccount);
+        console.log(`已将子账户 ${subAccount.subAccountId} 添加到类型 ${account.typeId}`);
+      } else {
+        console.log(`子账户 ${subAccount.subAccountId} 已存在于类型 ${account.typeId}`);
+      }
+    } else {
+      console.warn(`未找到子账户 ${subAccount.subAccountId} (${subAccount.accountName}) 对应的账户`);
+    }
+  });
+
+  // 验证每个账户类型的子账户数量
+  Object.entries(groups).forEach(([typeId, subAccounts]) => {
+    const type = accountTypes.value.find(t => t.typeId === Number(typeId));
+    console.log(`账户类型 ${type?.typeName} (${typeId}) 的子账户数量:`, subAccounts.length);
+    if (subAccounts.length > 0) {
+      console.log(`该类型的子账户:`, subAccounts.map(sa => ({
+        id: sa.subAccountId,
+        name: sa.accountName,
+        accountId: sa.accountId
+      })));
+    }
+  });
+
+  console.log('分组结果:', groups);
+  return groups;
+});
 
 interface TransactionWithUser extends TransactionDTO {
   user?: UserDTO;
@@ -45,9 +104,11 @@ const fetchData = async () => {
   error.value = null;
   try {
     await Promise.all([
-      accountsStore.fetchAccounts(),
-      transactionStore.fetchTransactions(),
-      fetchTransactionTypes()
+      fetchAccounts(),
+      fetchRecentTransactions(),
+      fetchTransactionTypes(),
+      fetchAccountTypes(),
+      fetchUsers()
     ]);
   } catch (err: any) {
     error.value = err.message || '获取数据失败';
@@ -58,61 +119,63 @@ const fetchData = async () => {
 
 const fetchAccounts = async () => {
   try {
-    if (isAdmin.value) {
-      // 管理员获取所有顶级账户
-      const result = await accountsService.getAccounts();
-      accountsStore.accounts = result;
-    } else {
-      // 普通用户获取可访问的子账户
-      const subAccounts = await accountsService.getSubAccounts();
-      console.log('获取到的子账户:', subAccounts);
-      
-      // 将子账户按顶级账户分组
-      const accountsMap = new Map<number, AccountDTO>();
-      
-      // 为每个顶级账户创建基础结构
-      ACCOUNT_TYPES.forEach(account => {
-        accountsMap.set(account.accountId, {
-          accountId: account.accountId,
-          accountName: account.accountName,
-          typeId: account.typeId,
-          type: getAccountTypeName(account.typeId),
-          userId: 0,
-          username: '',
-          subAccounts: []
-        });
-      });
-      
-      // 将子账户添加到对应的顶级账户中
-      for (const subAccount of subAccounts) {
-        const account = accountsMap.get(subAccount.accountId);
-        if (account) {
-          account.subAccounts = account.subAccounts || [];
-          account.subAccounts.push(subAccount);
-        }
+    console.log('开始获取账户信息...');
+    // 获取所有账户
+    const accountsList = await accountsService.getAccounts();
+    console.log('获取到的账户列表:', accountsList);
+    accounts.value = accountsList;
+
+    // 获取所有子账户
+    const allSubAccounts = await accountsService.getAllSubAccounts();
+    console.log('获取到的子账户列表:', allSubAccounts);
+    subAccounts.value = allSubAccounts;
+
+    // 验证账户和子账户的关联
+    allSubAccounts.forEach(subAccount => {
+      const account = accountsList.find(a => a.accountId === subAccount.accountId);
+      if (!account) {
+        console.warn(`警告: 子账户 ${subAccount.subAccountId} (${subAccount.accountName}) 未找到对应的账户`);
+      } else {
+        console.log(`子账户 ${subAccount.subAccountId} (${subAccount.accountName}) 关联到账户 ${account.accountId} (${account.accountName})`);
       }
-      
-      accountsStore.accounts = Array.from(accountsMap.values());
-      console.log('处理后的账户结构:', accountsStore.accounts);
-    }
+    });
+
   } catch (err: any) {
+    console.error('获取账户列表失败:', err);
     error.value = err.message || '获取账户列表失败';
   }
 };
 
 const fetchRecentTransactions = async () => {
   try {
-    // 获取最近5条交易记录
+    console.group('调试：获取最近交易记录');
+    console.log('开始获取最近5条交易记录...');
+    
     const result = await transactionsService.getTransactions({
+      page: 0,
       size: 5,
-      page: 0
+      userId: currentUser.value?.userId
     });
+    
+    console.log('API返回结果:', result);
+    
+    if (!result.transactions || result.transactions.length === 0) {
+      console.log('没有找到交易记录');
+      console.groupEnd();
+      return;
+    }
+    
+    console.log('交易记录数量:', result.transactions.length);
+    console.log('交易记录详情:', result.transactions);
     
     // 获取所有相关用户的信息
     const userIds = [...new Set(result.transactions.map(t => t.userId))];
+    console.log('相关用户ID:', userIds);
+    
     const users = await Promise.all(
       userIds.map(id => usersService.getUser(id))
     );
+    console.log('用户信息:', users);
     
     // 将用户信息添加到交易记录中
     const transactionsWithUsers: TransactionWithUser[] = result.transactions.map(transaction => ({
@@ -120,9 +183,13 @@ const fetchRecentTransactions = async () => {
       user: users.find(u => u.userId === transaction.userId)
     }));
     
+    console.log('添加用户信息后的交易记录:', transactionsWithUsers);
     transactionStore.transactions = transactionsWithUsers;
-  } catch (err: any) {
+    
+    console.groupEnd();
+  } catch (err) {
     console.error('获取最近交易记录失败:', err);
+    console.groupEnd();
   }
 };
 
@@ -134,11 +201,34 @@ const fetchTransactionTypes = async () => {
   }
 };
 
+const fetchAccountTypes = async () => {
+  try {
+    console.log('开始获取账户类型...');
+    const types = await accountTypesService.getAccountTypes();
+    console.log('获取到的账户类型:', types);
+    accountTypes.value = types;
+  } catch (err: any) {
+    console.error('获取账户类型失败:', err);
+    error.value = err.message || '获取账户类型失败';
+  }
+};
+
+const fetchUsers = async () => {
+  try {
+    users.value = await usersService.getUsers();
+  } catch (err: any) {
+    error.value = err.message || '获取用户列表失败';
+  }
+};
+
 const getAccountName = (subAccountId: number) => {
-  const account = accountsStore.accounts.find(a => a.subAccounts?.some(sa => sa.subAccountId === subAccountId));
+  const subAccount = subAccounts.value.find(sa => sa.subAccountId === subAccountId);
+  if (!subAccount) return '未知账户';
+  
+  const account = accounts.value.find(a => a.accountId === subAccount.accountId);
   if (!account) return '未知账户';
-  const subAccount = account.subAccounts?.find(sa => sa.subAccountId === subAccountId);
-  return subAccount ? `${subAccount.accountName} (${subAccount.accountNumber})` : '未知账户';
+  
+  return `${account.accountName} (${subAccount.accountNumber})`;
 };
 
 const getTransactionTypeName = (typeId: number): string => {
@@ -165,7 +255,6 @@ const formatTime = (dateString: string) => {
 };
 
 const handleAccountSubmit = async (account: AccountDTO) => {
-  showAddAccount.value = false;
   await fetchAccounts();
 };
 
@@ -192,8 +281,13 @@ const debugGetUser = async (userId: number) => {
 };
 
 const getAccountTypeName = (typeId: number): string => {
-  const accountType = ACCOUNT_TYPES.find(type => type.typeId === typeId);
-  return accountType?.accountName || '未知类型';
+  const accountType = accountTypes.value.find(type => type.typeId === typeId);
+  return accountType?.typeName || '未知类型';
+};
+
+const getUserName = (userId: number): string => {
+  const user = users.value.find(u => u.userId === userId);
+  return user?.username || '未知用户';
 };
 
 const getAssociatedUsers = (subAccounts: SubAccountDTO[] | undefined): string => {
@@ -210,13 +304,62 @@ const getAssociatedUsers = (subAccounts: SubAccountDTO[] | undefined): string =>
   return usernames.size > 0 ? Array.from(usernames).join(', ') : '无关联用户';
 };
 
+const debugSubAccount = async (subAccount: SubAccountDTO) => {
+  try {
+    console.log(`开始获取子账户 ${subAccount.subAccountId} 的详细信息...`);
+    const account = accounts.value.find(a => a.accountId === subAccount.accountId);
+    console.log('子账户信息:', subAccount);
+    console.log('所属账户信息:', account);
+    alert(`子账户信息:\n${JSON.stringify(subAccount, null, 2)}\n\n所属账户信息:\n${JSON.stringify(account, null, 2)}`);
+  } catch (err: any) {
+    console.error(`获取子账户信息失败:`, err);
+    alert(`获取失败: ${err.message}`);
+  }
+};
+
+const debugAccountOverview = async () => {
+  try {
+    console.log('开始调试账户概览...');
+    console.log('账户类型列表:', accountTypes.value);
+    console.log('账户列表:', accounts.value);
+    console.log('子账户列表:', subAccounts.value);
+    console.log('分组后的子账户:', groupedSubAccounts.value);
+    
+    // 检查每个账户类型的子账户数量
+    accountTypes.value.forEach(type => {
+      const subAccountsInType = groupedSubAccounts.value[type.typeId] || [];
+      console.log(`账户类型 ${type.typeName} (${type.typeId}) 的子账户数量:`, subAccountsInType.length);
+      if (subAccountsInType.length === 0) {
+        console.log(`警告: 账户类型 ${type.typeName} 没有子账户`);
+        // 检查是否有账户属于该类型
+        const accountsInType = accounts.value.filter(a => a.typeId === type.typeId);
+        console.log(`该类型的账户数量:`, accountsInType.length);
+        if (accountsInType.length > 0) {
+          console.log('该类型的账户:', accountsInType);
+        }
+      }
+    });
+    
+    alert('调试信息已输出到控制台，请按F12查看');
+  } catch (err: any) {
+    console.error('调试失败:', err);
+    alert(`调试失败: ${err.message}`);
+  }
+};
+
 onMounted(async () => {
   try {
     loading.value = true;
+    // 先获取账户类型
+    await fetchAccountTypes();
+    // 然后获取账户和子账户
+    await fetchAccounts();
+    // 最后获取其他数据
     await Promise.all([
-      fetchAccounts(),
+      transactionStore.fetchTransactions(),
       fetchRecentTransactions(),
-      fetchTransactionTypes()
+      fetchTransactionTypes(),
+      fetchUsers()
     ]);
   } catch (err: any) {
     error.value = err.message || '加载数据失败';
@@ -231,9 +374,8 @@ onMounted(async () => {
     <div class="header">
       <h1>账户概览</h1>
       <div class="header-actions">
-        <button @click="debugGetUser(1)" class="debug-btn">调试: 获取用户1</button>
-        <button @click="debugGetUser(2)" class="debug-btn">调试: 获取用户2</button>
-        <button @click="showAddAccount = true" class="add-btn">新增账户</button>
+        <button @click="debugAccountOverview" class="debug-btn">调试账户概览</button>
+        <button @click="fetchRecentTransactions" class="debug-btn">调试最近交易</button>
       </div>
     </div>
 
@@ -249,20 +391,25 @@ onMounted(async () => {
     <div v-else>
       <!-- 账户卡片列表 -->
       <div class="accounts-grid">
-        <div class="account-card" v-for="account in accounts" :key="account.accountId" @click="navigateToAccount(account)">
-          <h3>{{ account.accountName }}</h3>
-          <div class="account-info">
-            <div class="account-balance">
-              <span class="balance-label">余额：</span>
-              <span class="balance-amount">￥{{ Number(account.subAccounts?.[0]?.balance || 0).toFixed(2) }}</span>
-            </div>
-            <div class="account-details">
-              <div class="account-number">{{ account.subAccounts?.[0]?.accountNumber || '无账号' }}</div>
-              <div class="account-type">{{ getAccountTypeName(account.typeId) }}</div>
-              <div class="account-users">
-                <span class="label">关联用户：</span>
-                <span>{{ getAssociatedUsers(account.subAccounts) }}</span>
+        <div v-for="type in accountTypes" :key="type.typeId" class="account-type-section">
+          <h2 class="account-type-title">{{ type.typeName }}</h2>
+          <div class="sub-accounts-grid">
+            <div v-if="groupedSubAccounts[type.typeId]?.length > 0">
+              <div v-for="subAccount in groupedSubAccounts[type.typeId]" 
+                   :key="subAccount.subAccountId" 
+                   class="account-card"
+                   @click="navigateToAccount(accounts.find(a => a.accountId === subAccount.accountId) || accounts[0])">
+                <div class="account-header">
+                  <h3>{{ subAccount.accountName }}</h3>
+                </div>
+                <div class="account-info">
+                  <div class="account-number">账号: {{ subAccount.accountNumber }}</div>
+                  <div class="account-balance">余额: ¥{{ Number(subAccount.balance).toFixed(2) }}</div>
+                </div>
               </div>
+            </div>
+            <div v-else class="no-accounts">
+              <p>暂无账户</p>
             </div>
           </div>
         </div>
@@ -272,7 +419,10 @@ onMounted(async () => {
       <div class="recent-transactions">
         <div class="section-header">
           <h2>最近交易</h2>
-          <button @click="navigateToTransactions" class="view-all-btn">查看全部</button>
+          <div class="header-actions">
+            <button @click="fetchRecentTransactions" class="debug-btn">调试最近交易</button>
+            <button @click="navigateToTransactions" class="view-all-btn">查看全部</button>
+          </div>
         </div>
         <div v-if="recentTransactions.length > 0" class="transactions-list">
           <div v-for="transaction in recentTransactions" :key="transaction.transactionId" class="transaction-item">
@@ -294,7 +444,7 @@ onMounted(async () => {
                 </p>
                 <p class="transaction-user">
                   <span class="label">用户:</span>
-                  {{ transaction.user?.username || '未知用户' }}
+                  {{ getUserName(transaction.userId) }}
                 </p>
                 <p class="transaction-remarks">
                   <span class="label">备注:</span>
@@ -307,16 +457,6 @@ onMounted(async () => {
         <div v-else class="no-transactions">
           <p>暂无交易记录</p>
         </div>
-      </div>
-    </div>
-
-    <!-- 新增账户对话框 -->
-    <div v-if="showAddAccount" class="modal">
-      <div class="modal-content">
-        <AccountForm
-          @submit="handleAccountSubmit"
-          @cancel="showAddAccount = false"
-        />
       </div>
     </div>
   </div>
@@ -339,24 +479,29 @@ onMounted(async () => {
   color: #333;
 }
 
-.add-btn {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-btn:hover {
-  background-color: var(--primary-color-dark);
-}
-
 .accounts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
+}
+
+.account-type-section {
+  margin-bottom: 30px;
+}
+
+.account-type-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #eee;
+}
+
+.sub-accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
 }
 
 .account-card {
@@ -381,43 +526,16 @@ onMounted(async () => {
   margin-top: 10px;
 }
 
-.account-balance {
-  margin-bottom: 8px;
-}
-
-.balance-label {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.balance-amount {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
-}
-
-.account-details {
-  font-size: 0.9rem;
-  color: #666;
-}
-
 .account-number {
-  margin-bottom: 4px;
-}
-
-.account-type {
-  margin-bottom: 4px;
-}
-
-.account-users {
-  margin-top: 4px;
   font-size: 0.9rem;
   color: #666;
+  margin-bottom: 5px;
 }
 
-.account-users .label {
-  color: #999;
-  margin-right: 4px;
+.account-balance {
+  font-size: 1.1rem;
+  color: #2196F3;
+  font-weight: bold;
 }
 
 .recent-transactions {
@@ -539,26 +657,53 @@ onMounted(async () => {
   padding: 20px;
 }
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+.debug-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
 }
 
-.modal-content {
-  background: white;
+.debug-btn:hover {
+  background-color: #f57c00;
+}
+
+.no-accounts {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  background: #f9f9f9;
   border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+  margin: 10px 0;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.debug-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.debug-btn:hover {
+  background-color: #f57c00;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .debug-btn {
@@ -568,7 +713,7 @@ onMounted(async () => {
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 10px;
+  font-size: 0.9rem;
 }
 
 .debug-btn:hover {

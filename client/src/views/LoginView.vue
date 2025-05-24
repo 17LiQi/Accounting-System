@@ -59,15 +59,15 @@ const handleLogin = async () => {
     const response = await authStore.login(username.value, password.value);
     console.log('Login successful:', response);
     
-    // 登录成功后直接跳转
-    console.log('登录成功，准备跳转到账号管理页面...');
+    // 登录成功后直接跳转到首页
+    console.log('登录成功，准备跳转到首页...');
     try {
-      await router.replace({ name: 'accounts' });
+      await router.replace({ name: 'home' });
       console.log('路由跳转成功');
     } catch (routerError) {
       console.error('路由跳转失败:', routerError);
       // 如果命名路由失败，尝试使用路径
-      await router.replace('/accounts');
+      await router.replace('/');
       console.log('使用路径跳转成功');
     }
     
