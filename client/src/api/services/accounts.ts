@@ -140,8 +140,18 @@ class AccountsService {
   }
 
   async createAccount(request: AccountRequest): Promise<AccountDTO> {
-    const response = await apiClient.post<AccountDTO>('/accounts', request);
-    return normalizeAccountType(response.data);
+    try {
+      console.log('创建账户请求数据:', request);
+      const response = await apiClient.post<AccountDTO>('/accounts', request);
+      return normalizeAccountType(response.data);
+    } catch (error: any) {
+      console.error('创建账户失败:', error);
+      if (error.response?.data) {
+        console.error('错误详情:', error.response.data);
+        throw new Error(error.response.data.message || error.response.data.error || '创建账户失败');
+      }
+      throw error;
+    }
   }
 
   async updateAccount(id: number, request: AccountRequest): Promise<AccountDTO> {

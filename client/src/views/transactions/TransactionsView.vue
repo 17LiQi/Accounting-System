@@ -128,6 +128,9 @@ import type { TransactionTypeDTO } from '@/api/models/transactions/transaction-t
 import type { UserDTO } from '@/api/models/user/user-dto';
 import type { AccountDTO } from '@/api/models/accounts/account-dto';
 import TransactionForm from '@/components/transactions/TransactionForm.vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 interface TransactionWithUser extends TransactionDTO {
   user?: UserDTO;
@@ -160,6 +163,7 @@ const selectedSubAccountId = ref<number | undefined>(undefined);
 const selectedUserId = ref<number | undefined>(undefined);
 const sortOrder = ref<'asc' | 'desc'>('desc');
 const accounts = ref<AccountDTO[]>([]);
+const selectedAccountTypeId = ref<number | undefined>(undefined);
 
 const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.currentUser?.role === 'ADMIN');
@@ -249,6 +253,7 @@ const fetchTransactions = async () => {
     if (selectedUserId.value) {
       params.userId = selectedUserId.value;
     }
+
     
     console.log('发送请求参数:', params);
     
@@ -342,7 +347,13 @@ const deleteTransaction = async (transaction: TransactionWithUser) => {
 
 const handleTransactionSubmit = async (transaction: TransactionWithUser) => {
   closeTransactionForm();
+  // 强制重新获取数据
   await fetchTransactions();
+  // 如果当前页面没有数据，自动跳转到第一页
+  if (transactions.value.length === 0 && currentPage.value > 1) {
+    currentPage.value = 1;
+    await fetchTransactions();
+  }
 };
 
 const closeTransactionForm = () => {
@@ -355,7 +366,8 @@ const formatGroupDate = (dateString: string | number) => {
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
+    timeZone: 'Asia/Shanghai'
   });
 };
 
@@ -363,7 +375,8 @@ const formatTime = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleTimeString('zh-CN', {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: 'Asia/Shanghai'
   });
 };
 
@@ -412,6 +425,12 @@ const loadMore = async () => {
 };
 
 onMounted(async () => {
+  const routeUserId = route.query.userId;
+  if (!isAdmin.value && Number(routeUserId) !== authStore.currentUser?.userId) {
+    selectedUserId.value = authStore.currentUser?.userId;
+  } else if (routeUserId) {
+    selectedUserId.value = Number(routeUserId);
+  }
   await Promise.all([
     fetchUsers(),
     fetchTransactions(),

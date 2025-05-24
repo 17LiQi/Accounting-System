@@ -50,6 +50,7 @@ export interface SubAccountRequest {
      * @memberof SubAccountRequest
      */
     balance: string;
+    userIds?: number[]
 }
 
 export const SubAccountRequestCardTypeEnum = {

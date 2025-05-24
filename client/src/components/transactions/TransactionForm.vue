@@ -91,7 +91,9 @@ const formData = ref({
   subAccountId: props.fixedSubAccount?.subAccountId || props.transaction?.subAccountId || '',
   typeId: props.transaction?.typeId || '',
   amount: props.transaction?.amount || '',
-  time: props.transaction?.time ? new Date(props.transaction.time).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
+  time: props.transaction?.time 
+    ? new Date(props.transaction.time).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }).slice(0, 16).replace(' ', 'T')
+    : new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }).slice(0, 16).replace(' ', 'T'),
   remarks: props.transaction?.remarks || ''
 });
 
@@ -117,32 +119,57 @@ const handleSubmit = async () => {
   try {
     loading.value = true;
     
+    // 确保所有必要字段都存在且格式正确
     const request = {
       subAccountId: Number(formData.value.subAccountId),
       typeId: Number(formData.value.typeId),
-      amount: formData.value.amount,
-      time: new Date(formData.value.time).toISOString(),
-      remarks: formData.value.remarks
+      amount: Number(formData.value.amount).toFixed(2), // 确保金额格式正确
+      time: new Date(formData.value.time + ':00+08:00').toISOString(), // 添加时区信息
+      remarks: formData.value.remarks || '' // 确保remarks不为undefined
     };
 
+    console.log('提交的交易数据:', request); // 添加调试日志
+
     let result: TransactionDTO;
-    if (isEdit.value && props.transaction) {
-      result = await transactionsService.updateTransaction(props.transaction.transactionId, request);
-    } else {
-      result = await transactionsService.createTransaction(request);
+    try {
+      if (isEdit.value && props.transaction) {
+        result = await transactionsService.updateTransaction(props.transaction.transactionId, request);
+      } else {
+        result = await transactionsService.createTransaction(request);
+      }
+    } catch (updateError: any) {
+      // 如果更新失败，尝试重新获取最新的交易记录
+      if (isEdit.value && props.transaction) {
+        try {
+          result = await transactionsService.getTransaction(props.transaction.transactionId);
+          console.log('重新获取交易记录成功:', result);
+        } catch (getError) {
+          console.error('重新获取交易记录失败:', getError);
+          throw updateError; // 如果重新获取也失败，则抛出原始错误
+        }
+      } else {
+        throw updateError;
+      }
     }
 
     // 更新子账户余额
-    if (props.fixedSubAccount) {
-      await accountsService.recalculateBalance(props.fixedSubAccount.subAccountId);
-    } else {
-      await accountsService.recalculateBalance(Number(formData.value.subAccountId));
+    try {
+      if (props.fixedSubAccount) {
+        await accountsService.recalculateBalance(props.fixedSubAccount.subAccountId);
+      } else {
+        await accountsService.recalculateBalance(Number(formData.value.subAccountId));
+      }
+    } catch (balanceError) {
+      console.error('更新余额失败:', balanceError);
+      // 继续执行，不影响整体流程
     }
 
+    // 通知父组件更新成功
     emit('submit', result);
   } catch (err: any) {
     console.error('保存交易记录失败:', err);
-    alert('保存失败: ' + (err.message || '未知错误'));
+    const errorMessage = err.response?.data?.message || err.message || '未知错误';
+    alert('保存失败: ' + errorMessage);
   } finally {
     loading.value = false;
   }

@@ -13,10 +13,12 @@
  */
 
 export enum AccountRequestTypeEnum {
-  Cash = 'CASH',
   Bank = 'BANK',
+  Cash = 'CASH',
   Alipay = 'ALIPAY',
-  Wechat = 'WECHAT'
+  Wechat = 'WECHAT',
+  CreditCard = 'CREDIT_CARD',
+  Investment = 'INVESTMENT'
 }
 
 /**
@@ -43,6 +45,12 @@ export interface AccountRequest {
      * @memberof AccountRequest
      */
     'type': AccountRequestTypeEnum;
+    /**
+     * 用户 ID
+     * @type {number}
+     * @memberof AccountRequest
+     */
+    'userId': number;
 }
 
 export type AccountRequestTypeEnum = typeof AccountRequestTypeEnum[keyof typeof AccountRequestTypeEnum];

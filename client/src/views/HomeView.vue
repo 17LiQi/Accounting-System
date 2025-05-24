@@ -8,12 +8,14 @@ import { accountsService } from '@/api/services/accounts';
 import { transactionsService } from '@/api/services/transactions';
 import { usersService } from '@/api/services/users';
 import { accountTypesService } from '@/api/services/accountTypes';
+import { subAccountsService } from '@/api/services/subAccounts'; // 添加导入
 import type { AccountDTO } from '@/api/models/accounts';
 import type { TransactionDTO } from '@/api/models/transactions/transaction-dto';
 import type { TransactionTypeDTO } from '@/api/models/transactions/transaction-type-dto';
 import type { UserDTO } from '@/api/models/user/user-dto';
 import type { SubAccountDTO } from '@/api/models/sub-accounts/sub-account-dto';
 import type { AccountTypeDTO } from '@/api/models/account-types/account-type-dto';
+import type { TransactionQueryParams } from '@/api/models/transactions/transaction-query-params';
 import AccountForm from '@/components/accounts/AccountForm.vue';
 
 const authStore = useAuthStore();
@@ -118,80 +120,64 @@ const fetchData = async () => {
 };
 
 const fetchAccounts = async () => {
+  loading.value = true;
+  error.value = null;
   try {
-    console.log('开始获取账户信息...');
-    // 获取所有账户
+    if (isAdmin.value) {
+      const usersList = await usersService.getUsers();
+      users.value = usersList;
+      console.log('获取到的用户列表:', usersList);
+    }
+
     const accountsList = await accountsService.getAccounts();
-    console.log('获取到的账户列表:', accountsList);
-    accounts.value = accountsList;
+    accounts.value = isAdmin.value
+      ? accountsList
+      : accountsList.filter(account => account.userId === currentUser.value?.userId);
 
-    // 获取所有子账户
-    const allSubAccounts = await accountsService.getAllSubAccounts();
-    console.log('获取到的子账户列表:', allSubAccounts);
-    subAccounts.value = allSubAccounts;
-
-    // 验证账户和子账户的关联
-    allSubAccounts.forEach(subAccount => {
-      const account = accountsList.find(a => a.accountId === subAccount.accountId);
-      if (!account) {
-        console.warn(`警告: 子账户 ${subAccount.subAccountId} (${subAccount.accountName}) 未找到对应的账户`);
-      } else {
-        console.log(`子账户 ${subAccount.subAccountId} (${subAccount.accountName}) 关联到账户 ${account.accountId} (${account.accountName})`);
-      }
-    });
-
+    const allSubAccounts = await subAccountsService.getAllSubAccounts();
+    subAccounts.value = allSubAccounts.map((subAccount: SubAccountDTO) => ({
+      ...subAccount,
+      users: subAccount.users || []
+    }));
   } catch (err: any) {
     console.error('获取账户列表失败:', err);
     error.value = err.message || '获取账户列表失败';
+  } finally {
+    loading.value = false;
   }
 };
 
 const fetchRecentTransactions = async () => {
   try {
-    console.group('调试：获取最近交易记录');
-    console.log('开始获取最近5条交易记录...');
-    
-    const result = await transactionsService.getTransactions({
+    const params: TransactionQueryParams = {
       page: 0,
       size: 5,
-      userId: currentUser.value?.userId
-    });
-    
-    console.log('API返回结果:', result);
-    
-    if (!result.transactions || result.transactions.length === 0) {
-      console.log('没有找到交易记录');
-      console.groupEnd();
-      return;
+      sort: 'desc'
+    };
+
+    if (!isAdmin.value && currentUser.value?.userId) {
+      params.userId = currentUser.value.userId;
     }
-    
-    console.log('交易记录数量:', result.transactions.length);
-    console.log('交易记录详情:', result.transactions);
-    
-    // 获取所有相关用户的信息
+
+    const result = await transactionsService.getTransactions(params);
+    if (!result.transactions?.length) return;
+
     const userIds = [...new Set(result.transactions.map(t => t.userId))];
-    console.log('相关用户ID:', userIds);
-    
-    const users = await Promise.all(
+    const fetchedUsers = await Promise.all(
       userIds.map(id => usersService.getUser(id))
     );
-    console.log('用户信息:', users);
-    
-    // 将用户信息添加到交易记录中
-    const transactionsWithUsers: TransactionWithUser[] = result.transactions.map(transaction => ({
+
+    const transactionsWithUsers: TransactionDTO[] = result.transactions.map(transaction => ({
       ...transaction,
-      user: users.find(u => u.userId === transaction.userId)
+      user: fetchedUsers.find(u => u.userId === transaction.userId)
     }));
-    
-    console.log('添加用户信息后的交易记录:', transactionsWithUsers);
+
     transactionStore.transactions = transactionsWithUsers;
-    
-    console.groupEnd();
   } catch (err) {
     console.error('获取最近交易记录失败:', err);
-    console.groupEnd();
   }
 };
+
 
 const fetchTransactionTypes = async () => {
   try {
@@ -203,9 +189,7 @@ const fetchTransactionTypes = async () => {
 
 const fetchAccountTypes = async () => {
   try {
-    console.log('开始获取账户类型...');
     const types = await accountTypesService.getAccountTypes();
-    console.log('获取到的账户类型:', types);
     accountTypes.value = types;
   } catch (err: any) {
     console.error('获取账户类型失败:', err);
@@ -213,13 +197,16 @@ const fetchAccountTypes = async () => {
   }
 };
 
+
 const fetchUsers = async () => {
+  if (!isAdmin.value) return;
   try {
     users.value = await usersService.getUsers();
   } catch (err: any) {
     error.value = err.message || '获取用户列表失败';
   }
 };
+
 
 const getAccountName = (subAccountId: number) => {
   const subAccount = subAccounts.value.find(sa => sa.subAccountId === subAccountId);
@@ -292,15 +279,14 @@ const getUserName = (userId: number): string => {
 
 const getAssociatedUsers = (subAccounts: SubAccountDTO[] | undefined): string => {
   if (!subAccounts?.length) return '无关联用户';
-  
+
   const usernames = new Set<string>();
   for (const subAccount of subAccounts) {
-    const users = (subAccount as any).users as UserDTO[] | undefined;
-    if (users?.length) {
-      users.forEach(user => usernames.add(user.username));
+    if (subAccount.users?.length) {
+      subAccount.users.forEach(user => usernames.add(user.username));
     }
   }
-  
+
   return usernames.size > 0 ? Array.from(usernames).join(', ') : '无关联用户';
 };
 
@@ -350,11 +336,8 @@ const debugAccountOverview = async () => {
 onMounted(async () => {
   try {
     loading.value = true;
-    // 先获取账户类型
     await fetchAccountTypes();
-    // 然后获取账户和子账户
     await fetchAccounts();
-    // 最后获取其他数据
     await Promise.all([
       transactionStore.fetchTransactions(),
       fetchRecentTransactions(),
@@ -367,6 +350,7 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
 </script>
 
 <template>
