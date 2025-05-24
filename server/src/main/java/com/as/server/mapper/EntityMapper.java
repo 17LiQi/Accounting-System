@@ -2,12 +2,15 @@ package com.as.server.mapper;
 
 import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
+import com.as.server.dto.accounts.AccountTypeDTO;
+import com.as.server.dto.accounts.AccountTypeRequest;
 import com.as.server.dto.accounts.SubAccountDTO;
 import com.as.server.dto.accounts.SubAccountRequest;
 import com.as.server.dto.transactions.*;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
 import com.as.server.entity.*;
+import com.as.server.enums.AccountType;
 import com.as.server.repository.AccountTypeRepository;
 import org.mapstruct.Context;
 import org.mapstruct.Mapping;
@@ -127,8 +130,8 @@ public interface EntityMapper {
     }
 
     @Named("stringToTypeEnum")
-    default AccountDTO.TypeEnum stringToTypeEnum(String typeName) {
-        return typeName != null ? AccountDTO.TypeEnum.fromValue(typeName) : null;
+    default AccountType stringToTypeEnum(String typeName) {
+        return typeName != null ? AccountType.fromValue(typeName) : null;
     }
 
     @Named("localDateTimeToOffsetDateTime")
@@ -142,12 +145,12 @@ public interface EntityMapper {
     }
 
     @Named("accountType")
-    default AccountType accountType(Integer typeId, @Context AccountTypeRepository accountTypeRepository) {
+    default com.as.server.entity.AccountType accountType(Integer typeId, @Context AccountTypeRepository accountTypeRepository) {
         if (typeId == null) {
             logger.warn("Account type ID is null");
             return null;
         }
-        Optional<AccountType> accountTypeOptional = accountTypeRepository.findById(typeId);
+        Optional<com.as.server.entity.AccountType> accountTypeOptional = accountTypeRepository.findById(typeId);
         if (accountTypeOptional.isPresent()) {
             logger.debug("Found AccountType for typeId {}: {}", typeId, accountTypeOptional.get());
         } else {
@@ -185,4 +188,7 @@ public interface EntityMapper {
         subAccount.setSubAccountId(subAccountId);
         return subAccount;
     }
+
+    AccountTypeDTO toAccountTypeDTO(com.as.server.entity.AccountType accountType);
+    com.as.server.entity.AccountType toAccountType(AccountTypeRequest request);
 }

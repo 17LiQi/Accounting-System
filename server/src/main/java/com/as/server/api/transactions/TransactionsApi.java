@@ -86,23 +86,34 @@ public interface TransactionsApi {
 
 
     /**
-     * GET /transactions : 列出交易记录
+     * GET /transactions : 获取交易列表
      * 获取交易记录列表。普通用户仅可查看自己的记录（匹配 JWT 中的 userId）。 管理员可按 userId 过滤。 
      *
-     * @param page  (required)
-     * @param size  (required)
      * @param userId  (optional)
      * @param subAccountId  (optional)
+     * @param page  (optional)
+     * @param size  (optional)
+     * @param sort  (optional)
      * @return 交易记录列表 (status code 200)
      *         or 权限不足（普通用户尝试访问未关联的数据） (status code 403)
      */
     @Operation(
         operationId = "transactionsList",
-        summary = "列出交易记录",
+        summary = "获取交易列表",
         tags = { "transactions" },
         responses = {
-            @ApiResponse(responseCode = "200", description = "交易记录列表", content = @Content(mediaType = "application/json", schema = @Schema(implementation =  TransactionListResponse.class))),
-            @ApiResponse(responseCode = "403", description = "权限不足（普通用户尝试访问未关联的数据）", content = @Content(mediaType = "application/json", schema = @Schema(implementation =  ApiError.class)))
+            @ApiResponse(responseCode = "200", description = "成功获取交易列表", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionListResponse.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "请求参数错误", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            }),
+            @ApiResponse(responseCode = "401", description = "未授权", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            }),
+            @ApiResponse(responseCode = "403", description = "权限不足", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            })
         },
         security = {
             @SecurityRequirement(name = "bearerAuth")
@@ -113,24 +124,13 @@ public interface TransactionsApi {
         value = "/transactions",
         produces = { "application/json" }
     )
-    default ResponseEntity<TransactionListResponse> transactionsList(
-        @NotNull @Min(0) @Parameter(name = "page", description = "", required = true, schema = @Schema(description = "")) @Valid @RequestParam(value = "page", required = true) Integer page,
-        @NotNull @Min(1) @Max(100) @Parameter(name = "size", description = "", required = true, schema = @Schema(description = "")) @Valid @RequestParam(value = "size", required = true) Integer size,
-        @Parameter(name = "userId", description = "", schema = @Schema(description = "")) @Valid @RequestParam(value = "userId", required = false) Integer userId,
-        @Parameter(name = "subAccountId", description = "", schema = @Schema(description = "")) @Valid @RequestParam(value = "subAccountId", required = false) Integer subAccountId
-    ) {
-        getRequest().ifPresent(request -> {
-            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
-                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"total\" : 5, \"transactions\" : [ { \"amount\" : \"amount\", \"subAccountId\" : 1, \"isIncome\" : true, \"typeId\" : 6, \"time\" : \"2000-01-23T04:56:07.000+00:00\", \"userId\" : 5, \"transactionId\" : 0, \"remarks\" : \"remarks\" }, { \"amount\" : \"amount\", \"subAccountId\" : 1, \"isIncome\" : true, \"typeId\" : 6, \"time\" : \"2000-01-23T04:56:07.000+00:00\", \"userId\" : 5, \"transactionId\" : 0, \"remarks\" : \"remarks\" } ] }";
-                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
-                    break;
-                }
-            }
-        });
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
-    }
+    ResponseEntity<TransactionListResponse> transactionsList(
+        @Parameter(description = "用户ID") @Valid @RequestParam(value = "userId", required = false) Integer userId,
+        @Parameter(description = "子账户ID") @Valid @RequestParam(value = "subAccountId", required = false) Integer subAccountId,
+        @Parameter(description = "页码（从0开始）") @Valid @RequestParam(value = "page", required = false, defaultValue = "0") @Min(0) Integer page,
+        @Parameter(description = "每页大小") @Valid @RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) @Max(100) Integer size,
+        @Parameter(description = "排序方式（desc: 降序，asc: 升序）") @Valid @RequestParam(value = "sort", required = false, defaultValue = "desc") String sort
+    );
 
     /**
      * GET /transactions/{transactionId} : 获取交易记录详情

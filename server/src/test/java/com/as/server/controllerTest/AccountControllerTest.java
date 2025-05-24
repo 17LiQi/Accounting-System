@@ -74,7 +74,7 @@ public class AccountControllerTest {
         accountDTO.setAccountId(1);
         accountDTO.setAccountName("Test Account");
         accountDTO.setTypeId(1);
-        accountDTO.setType(AccountDTO.TypeEnum.BANK);
+        accountDTO.setType(AccountType.BANK);
 
         when(accountTypeRepository.findById(1)).thenReturn(Optional.of(accountType));
         when(accountService.create(any(Account.class))).thenReturn(account);
@@ -127,7 +127,7 @@ public class AccountControllerTest {
         accountDTO.setAccountId(1);
         accountDTO.setAccountName("Test Account");
         accountDTO.setTypeId(1);
-        accountDTO.setType(AccountDTO.TypeEnum.BANK);
+        accountDTO.setType(AccountType.BANK);
 
         List<Account> accounts = Collections.singletonList(account);
         when(accountService.findAll()).thenReturn(accounts);
@@ -162,7 +162,7 @@ public class AccountControllerTest {
         accountDTO.setAccountId(1);
         accountDTO.setAccountName("Updated Account");
         accountDTO.setTypeId(1);
-        accountDTO.setType(AccountDTO.TypeEnum.BANK);
+        accountDTO.setType(AccountType.BANK);
 
         when(accountTypeRepository.findById(1)).thenReturn(Optional.of(accountType));
         when(accountService.update(eq(1), any(Account.class))).thenReturn(account);

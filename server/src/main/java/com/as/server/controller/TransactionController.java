@@ -10,10 +10,13 @@ import com.as.server.entity.TransactionType;
 import com.as.server.entity.User;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.service.TransactionService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +28,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
@@ -71,50 +78,27 @@ public class TransactionController implements TransactionsApi {
     }
 
     @Override
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<TransactionListResponse> transactionsList(
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "userId", required = false) Integer userId,
-            @RequestParam(value = "subAccountId", required = false) Integer subAccountId) {
-        log.info("收到查询交易列表请求: 页码={}, 每页大小={}, 用户ID={}, 子账号ID={}",
-                page, size, userId, subAccountId);
-                
-        // 手动验证参数
-        if (page == null) {
-            log.error("页码参数不能为空");
-            throw new IllegalArgumentException("page must not be null");
+            @Parameter(description = "用户ID") @Valid @RequestParam(value = "userId", required = false) Integer userId,
+            @Parameter(description = "子账户ID") @Valid @RequestParam(value = "subAccountId", required = false) Integer subAccountId,
+            @Parameter(description = "页码（从0开始）") @Valid @RequestParam(value = "page", required = false, defaultValue = "0") @Min(0) Integer page,
+            @Parameter(description = "每页大小") @Valid @RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) @Max(100) Integer size,
+            @Parameter(description = "排序方式（desc: 降序，asc: 升序）") @Valid @RequestParam(value = "sort", required = false, defaultValue = "desc") String sort) {
+        Authentication auth = getContext().getAuthentication();
+        Integer currentUserId = null;
+        if (auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER"))) {
+            currentUserId = ((User) auth.getPrincipal()).getUserId();
+            if (userId != null && !userId.equals(currentUserId)) {
+                throw new AccessDeniedException("Users can only view their own transactions");
+            }
+            userId = currentUserId;
         }
-        if (size == null) {
-            log.error("每页大小参数不能为空");
-            throw new IllegalArgumentException("size must not be null");
-        }
-        if (page < 0) {
-            log.error("页码必须大于等于0, 当前值: {}", page);
-            throw new IllegalArgumentException("page must be greater than or equal to 0");
-        }
-        if (size < 1 || size > 100) {
-            log.error("每页大小必须在1到100之间, 当前值: {}", size);
-            throw new IllegalArgumentException("size must be between 1 and 100");
-        }
-        
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer authenticatedUserId = Integer.parseInt(authentication.getName());
-        log.debug("当前认证用户ID: {}", authenticatedUserId);
-        
-        if (userId != null && !userId.equals(authenticatedUserId) && authentication.getAuthorities().stream()
-                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            log.warn("用户 {} 尝试访问用户 {} 的交易记录", authenticatedUserId, userId);
-            throw new AccessDeniedException("Cannot access other user's transactions");
-        }
-        
-        Page<Transaction> transactions = transactionService.findAll(userId != null ? userId : authenticatedUserId,
-                subAccountId, PageRequest.of(page, size));
-        log.info("查询到 {} 条交易记录", transactions.getTotalElements());
-        
-        TransactionListResponse response = entityMapper.toTransactionListResponse(transactions);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sort), "time"));
+        Page<Transaction> transactions = transactionService.findAll(userId, subAccountId, pageable);
+        return ResponseEntity.ok(entityMapper.toTransactionListResponse(transactions));
     }
 
     @Override

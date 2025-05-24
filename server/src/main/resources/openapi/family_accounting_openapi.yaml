@@ -443,6 +443,34 @@ paths:
         required: true
         schema:
           type: string
+    get:
+      tags:
+        - accounts
+        - Accounts
+      summary: 获取顶级账户详情
+      operationId: accountsGet
+      parameters: []
+      responses:
+        '200':
+          description: 账户详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '403':
+          description: 权限不足（非管理员）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 账户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
     put:
       tags:
         - accounts
@@ -1002,6 +1030,183 @@ paths:
                 $ref: '#/components/schemas/ApiError'
       security:
         - bearerAuth: []
+  /account-types:
+    get:
+      tags:
+        - account-types
+        - AccountTypes
+      summary: 列出账户类型
+      operationId: accountTypesList
+      responses:
+        '200':
+          description: 账户类型列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountTypeDTO'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - account-types
+        - AccountTypes
+      summary: 创建账户类型
+      operationId: accountTypesCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountTypeRequest'
+        required: true
+      responses:
+        '201':
+          description: 账户类型已创建
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeDTO'
+        '400':
+          description: 无效输入（名称重复或参数错误）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限不足（非管理员）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
+  /account-types/{typeId}:
+    get:
+      tags:
+        - account-types
+        - AccountTypes
+      summary: 获取账户类型详情
+      operationId: accountTypesGet
+      parameters:
+        - name: typeId
+          in: path
+          description: 账户类型 ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: 账户类型详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeDTO'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 账户类型不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - account-types
+        - AccountTypes
+      summary: 更新账户类型
+      operationId: accountTypesUpdate
+      parameters:
+        - name: typeId
+          in: path
+          description: 账户类型 ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountTypeRequest'
+        required: true
+      responses:
+        '200':
+          description: 账户类型已更新
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeDTO'
+        '400':
+          description: 无效输入（名称重复或参数错误）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限不足（非管理员）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 账户类型不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - account-types
+        - AccountTypes
+      summary: 删除账户类型
+      operationId: accountTypesDelete
+      parameters:
+        - name: typeId
+          in: path
+          description: 账户类型 ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: 账户类型已删除
+        '403':
+          description: 权限不足（非管理员）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 账户类型不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 账户类型存在关联账户，无法删除
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - bearerAuth: []
 components:
   schemas:
     UserDTO:
@@ -1489,3 +1694,28 @@ components:
           type: string
           description: 收入金额（固定 2 位小数）
       description: 按类型统计的收入
+    AccountTypeDTO:
+      required:
+        - typeId
+        - typeName
+      type: object
+      properties:
+        typeId:
+          type: integer
+          format: int32
+          description: 账户类型 ID
+        typeName:
+          type: string
+          description: 账户类型名称
+          maxLength: 50
+          minLength: 1
+    AccountTypeRequest:
+      required:
+        - typeName
+      type: object
+      properties:
+        typeName:
+          type: string
+          description: 账户类型名称
+          maxLength: 50
+          minLength: 1

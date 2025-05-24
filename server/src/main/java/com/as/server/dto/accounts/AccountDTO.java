@@ -1,8 +1,7 @@
 package com.as.server.dto.accounts;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.as.server.enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Generated;
@@ -13,7 +12,6 @@ import java.util.Objects;
 /**
  * Account
  */
-
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-05-07T20:09:16.831236500+08:00[Asia/Shanghai]")
 public class AccountDTO {
 
@@ -26,44 +24,8 @@ public class AccountDTO {
   @JsonProperty("typeId")
   private Integer typeId;
 
-  /**
-   * 账户类型
-   */
-  public enum TypeEnum {
-    CASH("现金"),
-    BANK("银行卡"),
-    ALIPAY("支付宝"),
-    WECHAT("微信");
-
-    private String value;
-
-    TypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static TypeEnum fromValue(String value) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
   @JsonProperty("type")
-  private TypeEnum type;
+  private AccountType type;
 
   public AccountDTO accountId(Integer accountId) {
     this.accountId = accountId;
@@ -90,12 +52,12 @@ public class AccountDTO {
   }
 
   /**
-   * 账户名称（如“我的银行账户”）
+   * 账户名称（如"我的银行账户"）
    * @return accountName
    */
   @NotNull
   @Size(max = 100)
-  @Schema(name = "accountName", description = "账户名称（如“我的银行账户”）", required = true)
+  @Schema(name = "accountName", description = "账户名称（如\"我的银行账户\"）", required = true)
   public String getAccountName() {
     return accountName;
   }
@@ -123,7 +85,7 @@ public class AccountDTO {
     this.typeId = typeId;
   }
 
-  public AccountDTO type(TypeEnum type) {
+  public AccountDTO type(AccountType type) {
     this.type = type;
     return this;
   }
@@ -134,11 +96,11 @@ public class AccountDTO {
    */
   @NotNull
   @Schema(name = "type", description = "账户类型", required = true)
-  public TypeEnum getType() {
+  public AccountType getType() {
     return type;
   }
 
-  public void setType(TypeEnum type) {
+  public void setType(AccountType type) {
     this.type = type;
   }
 

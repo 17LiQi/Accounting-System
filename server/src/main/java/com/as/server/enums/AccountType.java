@@ -13,7 +13,13 @@ public enum AccountType {
 
     ALIPAY("支付宝"),
 
-    WECHAT("微信");
+    WECHAT("微信"),
+    //投资账户
+    INVESTMENT("投资账户"),
+    //信用卡
+    CREDIT_CARD("信用卡");
+
+
 
     private final String value;
 
@@ -30,6 +36,7 @@ public enum AccountType {
     public String toString() {
         return String.valueOf(value);
     }
+
 
     @JsonCreator
     public static AccountType fromValue(String value) {

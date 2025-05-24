@@ -2,6 +2,8 @@ package com.as.server.mapper.impl;
 
 import com.as.server.dto.accounts.AccountDTO;
 import com.as.server.dto.accounts.AccountRequest;
+import com.as.server.dto.accounts.AccountTypeDTO;
+import com.as.server.dto.accounts.AccountTypeRequest;
 import com.as.server.dto.accounts.SubAccountDTO;
 import com.as.server.dto.accounts.SubAccountRequest;
 import com.as.server.dto.transactions.TransactionDTO;
@@ -10,9 +12,16 @@ import com.as.server.dto.transactions.TransactionTypeDTO;
 import com.as.server.dto.transactions.TransactionTypeRequest;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
-import com.as.server.entity.*;
+import com.as.server.entity.Account;
+import com.as.server.entity.AccountType;
+import com.as.server.entity.SubAccount;
+import com.as.server.entity.Transaction;
+import com.as.server.entity.TransactionType;
+import com.as.server.entity.User;
 import com.as.server.mapper.EntityMapper;
 import com.as.server.repository.AccountTypeRepository;
+import org.mapstruct.Context;
+import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Generated;
@@ -186,6 +195,33 @@ public class EntityMapperImpl implements EntityMapper {
         transactionType.setIsIncome( request.getIsIncome() );
 
         return transactionType;
+    }
+
+    @Override
+    public AccountTypeDTO toAccountTypeDTO(AccountType accountType) {
+        if (accountType == null) {
+            return null;
+        }
+
+        AccountTypeDTO accountTypeDTO = new AccountTypeDTO();
+
+        accountTypeDTO.setTypeId(accountType.getTypeId());
+        accountTypeDTO.setTypeName(accountType.getTypeName());
+
+        return accountTypeDTO;
+    }
+
+    @Override
+    public AccountType toAccountType(AccountTypeRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        AccountType accountType = new AccountType();
+
+        accountType.setTypeName(request.getTypeName());
+
+        return accountType;
     }
 
     private Integer accountAccountTypeTypeId(Account account) {

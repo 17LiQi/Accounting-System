@@ -212,4 +212,46 @@ public interface AccountsApi {
 
     }
 
+    /**
+     * GET /accounts/{accountId} : 获取顶级账户详情
+     * 管理员获取指定账户的详情。
+     *
+     * @param accountId 账户 ID (required)
+     * @return 账户详情 (status code 200)
+     *         or 权限不足（非管理员） (status code 403)
+     *         or 账户不存在 (status code 404)
+     */
+    @Operation(
+        operationId = "accountsGet",
+        summary = "获取顶级账户详情",
+        tags = { "accounts" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "账户详情", content = @Content(mediaType = "application/json", schema = @Schema(implementation =  Account.class))),
+            @ApiResponse(responseCode = "403", description = "权限不足（非管理员）", content = @Content(mediaType = "application/json", schema = @Schema(implementation =  ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "账户不存在", content = @Content(mediaType = "application/json", schema = @Schema(implementation =  ApiError.class)))
+        },
+        security = {
+            @SecurityRequirement(name = "bearerAuth")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.GET,
+        value = "/accounts/{accountId}",
+        produces = { "application/json" }
+    )
+    default ResponseEntity<AccountDTO> accountsGet(
+        @Parameter(name = "accountId", description = "账户 ID", required = true, schema = @Schema(description = "")) @PathVariable("accountId") Integer accountId
+    ) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"accountId\" : 0, \"name\" : \"name\", \"type\" : \"BANK\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
 }

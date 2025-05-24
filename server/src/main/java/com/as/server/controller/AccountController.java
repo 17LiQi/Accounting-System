@@ -52,23 +52,32 @@ public class AccountController implements AccountsApi {
     }
 
     @Override
-    @PutMapping("/{id}")
+    @GetMapping("/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AccountDTO> accountsUpdate(@PathVariable Integer id, @Valid @RequestBody AccountRequest request) {
+    public ResponseEntity<AccountDTO> accountsGet(@PathVariable("accountId") Integer accountId) {
+        Account account = accountService.findById(accountId);
+        AccountDTO accountDTO = entityMapper.toAccountDTO(account);
+        return ResponseEntity.ok(accountDTO);
+    }
+
+    @Override
+    @PutMapping("/{accountId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AccountDTO> accountsUpdate(@PathVariable("accountId") Integer accountId, @Valid @RequestBody AccountRequest request) {
         Account account = entityMapper.toAccount(request, accountTypeRepository);
-        Account updatedAccount = accountService.update(id, account);
+        Account updatedAccount = accountService.update(accountId, account);
         AccountDTO accountDTO = entityMapper.toAccountDTO(updatedAccount);
         return ResponseEntity.ok(accountDTO);
     }
 
     @Override
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> accountsDelete(@PathVariable Integer id) {
-        if (accountService.hasSubAccounts(id)) {
+    public ResponseEntity<Void> accountsDelete(@PathVariable("accountId") Integer accountId) {
+        if (accountService.hasSubAccounts(accountId)) {
             throw new IllegalStateException("Account has associated sub-accounts");
         }
-        accountService.delete(id);
+        accountService.delete(accountId);
         return ResponseEntity.noContent().build();
     }
 }
