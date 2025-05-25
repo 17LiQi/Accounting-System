@@ -7,6 +7,7 @@ import com.as.server.entity.Account;
 import com.as.server.entity.SubAccount;
 import com.as.server.entity.User;
 import com.as.server.enums.CardType;
+import com.as.server.mapper.EntityMapper;
 import com.as.server.service.SubAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +31,11 @@ public class SubAccountController implements SubAccountsApi {
 
     private static final Logger log = LoggerFactory.getLogger(SubAccountController.class);
     private final SubAccountService subAccountService;
+    private final EntityMapper entityMapper;
 
-    public SubAccountController(SubAccountService subAccountService) {
+    public SubAccountController(SubAccountService subAccountService, EntityMapper entityMapper) {
         this.subAccountService = subAccountService;
+        this.entityMapper = entityMapper;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class SubAccountController implements SubAccountsApi {
         Integer userId = Integer.valueOf(auth.getName());
         SubAccount subAccount = mapRequestToEntity(request, userId);
         SubAccount created = subAccountService.create(subAccount);
-        SubAccountDTO response = mapEntityToDTO(created);
+        SubAccountDTO response = entityMapper.toSubAccountDTO(created);
         log.debug("Created sub-account: {}", response);
         return ResponseEntity.status(201).contentType(MediaType.APPLICATION_JSON).body(response);
     }
@@ -56,11 +59,12 @@ public class SubAccountController implements SubAccountsApi {
         log.debug("Received get sub-accounts request");
         Authentication auth = getContext().getAuthentication();
         Integer userId = Integer.valueOf(auth.getName());
-        List<SubAccount> subAccounts = subAccountService.findAll();
+        List<SubAccount> subAccounts = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
+                ? subAccountService.findAll()
+                : subAccountService.findSubAccountsByUserId(userId);
         List<SubAccountDTO> response = subAccounts.stream()
-                .filter(sa -> sa.getUsers().stream().anyMatch(u -> u.getUserId().equals(userId)) ||
-                        auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")))
-                .map(this::mapEntityToDTO)
+                .map(entityMapper::toSubAccountDTO)
                 .collect(Collectors.toList());
         log.debug("Returning {} sub-accounts", response.size());
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
@@ -79,7 +83,7 @@ public class SubAccountController implements SubAccountsApi {
             log.warn("User {} attempted to access sub-account {} without permission", userId, id);
             throw new AccessDeniedException("Cannot access sub-account");
         }
-        SubAccountDTO response = mapEntityToDTO(subAccount);
+        SubAccountDTO response = entityMapper.toSubAccountDTO(subAccount);
         log.debug("Returning sub-account: {}", response);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
@@ -100,7 +104,7 @@ public class SubAccountController implements SubAccountsApi {
         SubAccount subAccount = mapRequestToEntity(request, userId);
         subAccount.setSubAccountId(id);
         SubAccount updated = subAccountService.update(id, subAccount);
-        SubAccountDTO response = mapEntityToDTO(updated);
+        SubAccountDTO response = entityMapper.toSubAccountDTO(updated);
         log.debug("Updated sub-account: {}", response);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
@@ -140,54 +144,22 @@ public class SubAccountController implements SubAccountsApi {
         account.setAccountId(request.getAccountId() != null ? request.getAccountId() : 0);
         subAccount.setAccount(account);
 
-        // 获取当前用户权限
         Authentication auth = getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         if (isAdmin && request.getUserIds() != null && !request.getUserIds().isEmpty()) {
-            // 管理员指定用户
             request.getUserIds().forEach(id -> {
                 User user = new User();
                 user.setUserId(id);
                 subAccount.addUser(user);
             });
         } else {
-            // 普通用户或未指定用户时，关联当前用户
             User user = new User();
             user.setUserId(userId);
             subAccount.addUser(user);
         }
 
         return subAccount;
-    }
-
-    private SubAccountDTO mapEntityToDTO(SubAccount subAccount) {
-        if (subAccount == null) {
-            throw new IllegalArgumentException("Sub-account cannot be null");
-        }
-        SubAccountDTO dto = new SubAccountDTO();
-        dto.setSubAccountId(subAccount.getSubAccountId());
-        dto.setAccountId(subAccount.getAccount() != null ? subAccount.getAccount().getAccountId() : null);
-        dto.setAccountName(subAccount.getAccountName());
-        dto.setAccountNumber(subAccount.getAccountNumber());
-        dto.setCardType(subAccount.getCardType() != null ? CardType.valueOf(subAccount.getCardType().name()) : null);
-        dto.setBalance(subAccount.getBalance() != null ? subAccount.getBalance().toString() : null);
-
-        // 添加 users 映射
-        if (subAccount.getUsers() != null && !subAccount.getUsers().isEmpty()) {
-            List<SubAccountDTO.UserDTO> userDTOs = subAccount.getUsers().stream()
-                    .map(user -> {
-                        SubAccountDTO.UserDTO userDTO = new SubAccountDTO.UserDTO();
-                        userDTO.setUserId(user.getUserId());
-                        userDTO.setUsername(user.getUsername());
-                        userDTO.setIsAdmin(user.getIsAdmin());
-                        return userDTO;
-                    })
-                    .collect(Collectors.toList());
-            dto.setUsers(userDTOs);
-        }
-
-        return dto;
     }
 }

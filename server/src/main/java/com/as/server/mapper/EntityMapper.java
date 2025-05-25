@@ -1,11 +1,6 @@
 package com.as.server.mapper;
 
-import com.as.server.dto.accounts.AccountDTO;
-import com.as.server.dto.accounts.AccountRequest;
-import com.as.server.dto.accounts.AccountTypeDTO;
-import com.as.server.dto.accounts.AccountTypeRequest;
-import com.as.server.dto.accounts.SubAccountDTO;
-import com.as.server.dto.accounts.SubAccountRequest;
+import com.as.server.dto.accounts.*;
 import com.as.server.dto.transactions.*;
 import com.as.server.dto.users.UserDTO;
 import com.as.server.dto.users.UserRequest;
@@ -24,7 +19,9 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // @Mapper
@@ -62,6 +59,7 @@ public interface EntityMapper {
     @Mapping(target = "accountNumber", source = "accountNumber")
     @Mapping(target = "cardType", source = "cardType")
     @Mapping(target = "balance", source = "balance", qualifiedByName = "bigDecimalToString")
+    @Mapping(target = "users", source = "users", qualifiedByName = "toUserDTOList")
     SubAccountDTO toSubAccountDTO(SubAccount subAccount);
 
     @Mapping(target = "subAccountId", ignore = true)
@@ -119,6 +117,13 @@ public interface EntityMapper {
     }
 
     // 工具方法
+    @Named("toUserDTOList")
+    default List<UserDTO> toUserDTOList(Set<User> users) {
+        return users != null ? users.stream()
+                .map(this::toUserDTO)
+                .collect(Collectors.toList()) : null;
+    }
+
     @Named("bigDecimalToString")
     default String bigDecimalToString(BigDecimal value) {
         return value != null ? value.setScale(2, RoundingMode.HALF_UP).toString() : null;

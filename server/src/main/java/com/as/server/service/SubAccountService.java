@@ -45,4 +45,7 @@ public interface SubAccountService {
      * @return 是否有关联交易
      */
     boolean hasTransactions(Integer id);
+
+    List<SubAccount> findSubAccountsByUserId(Integer userId);
+
 }

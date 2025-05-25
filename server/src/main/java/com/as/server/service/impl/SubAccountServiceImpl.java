@@ -8,6 +8,7 @@ import com.as.server.repository.TransactionRepository;
 import com.as.server.repository.UserRepository;
 import com.as.server.service.SubAccountService;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -60,14 +61,18 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Override
     public SubAccount findById(Integer id) {
         log.info("Finding sub-account by id: {}", id);
-        return subAccountRepository.findById(id)
+        SubAccount subAccount = subAccountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SubAccount not found with id: " + id));
+        Hibernate.initialize(subAccount.getUsers());
+        return subAccount;
     }
 
     @Override
     public List<SubAccount> findAll() {
         log.info("Finding all sub-accounts");
-        return subAccountRepository.findAll();
+        List<SubAccount> subAccounts = subAccountRepository.findAll();
+        subAccounts.forEach(sa -> Hibernate.initialize(sa.getUsers()));
+        return subAccounts;
     }
 
     @Override
@@ -118,6 +123,14 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Transactional(readOnly = true)
     public boolean hasTransactions(Integer subAccountId) {
         return transactionRepository.existsBySubAccountSubAccountId(subAccountId);
+    }
+
+    @Override
+    public List<SubAccount> findSubAccountsByUserId(Integer userId) {
+        log.info("Finding sub-accounts for user: {}", userId);
+        List<SubAccount> subAccounts = subAccountRepository.findSubAccountsByUserId(userId);
+        subAccounts.forEach(sa -> Hibernate.initialize(sa.getUsers()));
+        return subAccounts;
     }
 
 }

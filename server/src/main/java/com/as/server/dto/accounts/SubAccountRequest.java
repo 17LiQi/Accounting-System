@@ -32,7 +32,6 @@ public class SubAccountRequest   {
   @JsonProperty("accountNumber")
   @Schema(description = "子账户编号", required = true)
   @NotNull @Size(max = 50) 
-  @Pattern(regexp = "^[0-9]{10}$", message = "子账户编号必须是10位数字")
   private String accountNumber;
 
   @JsonProperty("cardType")

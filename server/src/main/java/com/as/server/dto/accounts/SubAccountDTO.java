@@ -1,5 +1,6 @@
 package com.as.server.dto.accounts;
 
+import com.as.server.dto.users.UserDTO;
 import com.as.server.enums.CardType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -8,6 +9,8 @@ import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -34,6 +37,9 @@ public class SubAccountDTO {
 
   @JsonProperty("balance")
   private String balance;
+
+  @JsonProperty("users")
+  private List<UserDTO> users = new ArrayList<>();
 
   public SubAccountDTO subAccountId(Integer subAccountId) {
     this.subAccountId = subAccountId;
@@ -149,6 +155,20 @@ public class SubAccountDTO {
     this.balance = balance;
   }
 
+  public SubAccountDTO users(List<UserDTO> users) {
+    this.users = users;
+    return this;
+  }
+
+  @Schema(name = "users", required = false)
+  public List<UserDTO> getUsers() {
+    return users;
+  }
+
+  public void setUsers(List<UserDTO> users) {
+    this.users = users;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -181,6 +201,7 @@ public class SubAccountDTO {
     sb.append("    accountNumber: ").append(toIndentedString(accountNumber)).append("\n");
     sb.append("    cardType: ").append(toIndentedString(cardType)).append("\n");
     sb.append("    balance: ").append(toIndentedString(balance)).append("\n");
+    sb.append("    users: ").append(toIndentedString(users)).append("\n");
     sb.append("}");
     return sb.toString();
   }
