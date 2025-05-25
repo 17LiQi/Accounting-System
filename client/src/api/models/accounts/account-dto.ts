@@ -11,8 +11,10 @@ export interface AccountDTO {
   subAccounts?: SubAccountDTO[];
 }
 
-export interface AccountRequest {
+export interface AccountDTO {
+  accountId: number;
   accountName: string;
   typeId: number;
+  type: string;
   description?: string;
-} 
+}

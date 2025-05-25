@@ -56,13 +56,8 @@ export interface SubAccountDTO {
      * @memberof SubAccountDTO
      */
     'balance': string;
-    users?: Array<{
-        userId: number;
-        username: string;
-        isAdmin: boolean;
-    }>;
+    users?: Array<UserDTO>;
 }
-
 export const SubAccountDTOCardTypeEnum = {
     Savings: 'SAVINGS',
     Debit: 'DEBIT',

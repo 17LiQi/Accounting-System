@@ -53,6 +53,5 @@ export interface AccountRequest {
     'userId': number;
 }
 
-export type AccountRequestTypeEnum = typeof AccountRequestTypeEnum[keyof typeof AccountRequestTypeEnum];
 
 

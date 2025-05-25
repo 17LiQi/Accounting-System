@@ -8,7 +8,7 @@ import { accountsService } from '@/api/services/accounts';
 import { transactionsService } from '@/api/services/transactions';
 import { usersService } from '@/api/services/users';
 import { accountTypesService } from '@/api/services/accountTypes';
-import { subAccountsService } from '@/api/services/subAccounts'; // 添加导入
+import { subAccountsService } from '@/api/services/subAccounts';
 import type { AccountDTO } from '@/api/models/accounts';
 import type { TransactionDTO } from '@/api/models/transactions/transaction-dto';
 import type { TransactionTypeDTO } from '@/api/models/transactions/transaction-type-dto';
@@ -35,66 +35,29 @@ const transactionTypes = ref<TransactionTypeDTO[]>([]);
 const accountTypes = ref<AccountTypeDTO[]>([]);
 const users = ref<UserDTO[]>([]);
 
+
 // 按账户类型分组的子账户
 const groupedSubAccounts = computed(() => {
-  console.log('开始分组子账户...');
-  console.log('当前账户类型:', accountTypes.value);
-  console.log('当前账户列表:', accounts.value);
-  console.log('当前子账户列表:', subAccounts.value);
-
-  const groups: Record<number, SubAccountDTO[]> = {};
-  
-  // 初始化所有账户类型的分组
-  accountTypes.value.forEach(type => {
-    groups[type.typeId] = [];
-  });
-  
-  // 将子账户按类型分组
-  subAccounts.value.forEach(subAccount => {
-    const account = accounts.value.find(a => a.accountId === subAccount.accountId);
-    if (account) {
-      console.log(`处理子账户 ${subAccount.subAccountId}:`, {
-        subAccount,
-        account,
-        typeId: account.typeId
-      });
-      
-      // 确保该类型的分组存在
-      if (!groups[account.typeId]) {
-        groups[account.typeId] = [];
-      }
-      
-      // 检查是否已经添加过该子账户
-      const existingIndex = groups[account.typeId].findIndex(
-        sa => sa.subAccountId === subAccount.subAccountId
-      );
-      
-      if (existingIndex === -1) {
-        groups[account.typeId].push(subAccount);
-        console.log(`已将子账户 ${subAccount.subAccountId} 添加到类型 ${account.typeId}`);
-      } else {
-        console.log(`子账户 ${subAccount.subAccountId} 已存在于类型 ${account.typeId}`);
-      }
-    } else {
-      console.warn(`未找到子账户 ${subAccount.subAccountId} (${subAccount.accountName}) 对应的账户`);
-    }
-  });
-
-  // 验证每个账户类型的子账户数量
-  Object.entries(groups).forEach(([typeId, subAccounts]) => {
-    const type = accountTypes.value.find(t => t.typeId === Number(typeId));
-    console.log(`账户类型 ${type?.typeName} (${typeId}) 的子账户数量:`, subAccounts.length);
-    if (subAccounts.length > 0) {
-      console.log(`该类型的子账户:`, subAccounts.map(sa => ({
-        id: sa.subAccountId,
-        name: sa.accountName,
-        accountId: sa.accountId
-      })));
-    }
-  });
-
-  console.log('分组结果:', groups);
-  return groups;
+    const groups: Record<number, SubAccountDTO[]> = {};
+    accountTypes.value.forEach(type => {
+        groups[type.typeId] = [];
+    });
+    groups[0] = [];
+    subAccounts.value.forEach(subAccount => {
+        const account = accounts.value.find(a => a.accountId === subAccount.accountId);
+        const typeId = account?.typeId || 0;
+        if (!account) {
+            console.warn(`子账户 ${subAccount.subAccountId} 的账户 ${subAccount.accountId} 未找到`);
+        }
+        if (!groups[typeId]) {
+            groups[typeId] = [];
+        }
+        if (!groups[typeId].some(sa => sa.subAccountId === subAccount.subAccountId)) {
+            groups[typeId].push(subAccount);
+        }
+    });
+    console.log('分组子账户:', groups);
+    return groups;
 });
 
 interface TransactionWithUser extends TransactionDTO {
@@ -120,64 +83,79 @@ const fetchData = async () => {
 };
 
 const fetchAccounts = async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    if (isAdmin.value) {
-      const usersList = await usersService.getUsers();
-      users.value = usersList;
-      console.log('获取到的用户列表:', usersList);
+    loading.value = true;
+    error.value = null;
+    try {
+        accounts.value = await accountsService.getAccounts();
+        console.log('账户列表:', accounts.value);
+        const allSubAccounts = await subAccountsService.getAllSubAccounts();
+        subAccounts.value = allSubAccounts.map((subAccount: SubAccountDTO) => ({
+            ...subAccount,
+            users: subAccount.users || []
+        }));
+        console.log('子账户列表:', subAccounts.value);
+        if (isAdmin.value) {
+            users.value = await usersService.getUsers();
+        } else {
+            users.value = [await usersService.getCurrentUser()];
+            // 为普通用户补齐 users
+            subAccounts.value = subAccounts.value.map((subAccount: SubAccountDTO) => ({
+                ...subAccount,
+                users: subAccount.users?.length ? subAccount.users : [
+                    { userId: currentUser.value.userId, username: currentUser.value.username }
+                ]
+            }));
+        }
+    } catch (err: any) {
+        error.value = err.message || '获取账户列表失败';
+    } finally {
+        loading.value = false;
     }
-
-    const accountsList = await accountsService.getAccounts();
-    accounts.value = isAdmin.value
-      ? accountsList
-      : accountsList.filter(account => account.userId === currentUser.value?.userId);
-
-    const allSubAccounts = await subAccountsService.getAllSubAccounts();
-    subAccounts.value = allSubAccounts.map((subAccount: SubAccountDTO) => ({
-      ...subAccount,
-      users: subAccount.users || []
-    }));
-  } catch (err: any) {
-    console.error('获取账户列表失败:', err);
-    error.value = err.message || '获取账户列表失败';
-  } finally {
-    loading.value = false;
-  }
 };
 
 const fetchRecentTransactions = async () => {
-  try {
-    const params: TransactionQueryParams = {
-      page: 0,
-      size: 5,
-      sort: 'desc'
-    };
+    try {
+        const params: TransactionQueryParams = {
+            page: 0,
+            size: 5,
+            sort: 'desc'
+        };
+        if (!isAdmin.value && currentUser.value?.userId) {
+            params.userId = currentUser.value.userId;
+        }
+        const result = await transactionsService.getTransactions(params);
+        if (!result.transactions?.length) return;
 
-    if (!isAdmin.value && currentUser.value?.userId) {
-      params.userId = currentUser.value.userId;
+        const userIds = [...new Set(result.transactions.map(t => t.userId).filter(id => id))];
+        const fetchedUsers = await Promise.all(
+            userIds.map(id => usersService.getUser(id).catch(err => {
+                console.warn(`获取用户 ${id} 失败:`, err);
+                return null;
+            }))
+        ).then(users => users.filter(u => u !== null) as UserDTO[]);
+
+        const transactionsWithUsers: TransactionDTO[] = result.transactions.map(transaction => {
+            if (!subAccounts.value.some(sa => sa.subAccountId === transaction.subAccountId)) {
+                console.warn(`交易 ${transaction.transactionId} 的子账户 ${transaction.subAccountId} 未找到`);
+            }
+            return {
+                ...transaction,
+                user: fetchedUsers.find(u => u.userId === transaction.userId) || users.value.find(u => u.userId === transaction.userId)
+            };
+        });
+
+        transactionStore.transactions = transactionsWithUsers;
+        console.log('最近交易:', transactionsWithUsers.map(t => ({
+            transactionId: t.transactionId,
+            userId: t.userId,
+            username: t.user?.username || '未知用户',
+            subAccountId: t.subAccountId,
+            accountName: getAccountName(t.subAccountId)
+        })));
+    } catch (err) {
+        console.error('获取最近交易记录失败:', err);
     }
-
-    const result = await transactionsService.getTransactions(params);
-    if (!result.transactions?.length) return;
-
-    const userIds = [...new Set(result.transactions.map(t => t.userId))];
-    const fetchedUsers = await Promise.all(
-      userIds.map(id => usersService.getUser(id))
-    );
-
-    const transactionsWithUsers: TransactionDTO[] = result.transactions.map(transaction => ({
-      ...transaction,
-      user: fetchedUsers.find(u => u.userId === transaction.userId)
-    }));
-
-    transactionStore.transactions = transactionsWithUsers;
-  } catch (err) {
-    console.error('获取最近交易记录失败:', err);
-  }
 };
-
 
 const fetchTransactionTypes = async () => {
   try {
@@ -197,23 +175,28 @@ const fetchAccountTypes = async () => {
   }
 };
 
-
 const fetchUsers = async () => {
   if (!isAdmin.value) return;
   try {
-    users.value = await usersService.getUsers();
+    const usersList = await usersService.getUsers();
+    users.value = [...users.value, ...usersList];
   } catch (err: any) {
     error.value = err.message || '获取用户列表失败';
   }
 };
 
-
 const getAccountName = (subAccountId: number) => {
   const subAccount = subAccounts.value.find(sa => sa.subAccountId === subAccountId);
-  if (!subAccount) return '未知账户';
+  if (!subAccount) {
+    console.warn(`子账户 ${subAccountId} 未找到在 subAccounts.value`);
+    return '未知账户';
+  }
   
   const account = accounts.value.find(a => a.accountId === subAccount.accountId);
-  if (!account) return '未知账户';
+  if (!account) {
+    console.warn(`账户 ${subAccount.accountId} 未找到在 accounts.value`);
+    return '未知账户';
+  }
   
   return `${account.accountName} (${subAccount.accountNumber})`;
 };
@@ -246,6 +229,7 @@ const handleAccountSubmit = async (account: AccountDTO) => {
 };
 
 const navigateToAccount = (account: AccountDTO) => {
+  if (!account) return;
   router.push({
     name: 'account-details',
     params: { id: account.accountId }
@@ -274,58 +258,100 @@ const getAccountTypeName = (typeId: number): string => {
 
 const getUserName = (userId: number): string => {
   const user = users.value.find(u => u.userId === userId);
-  return user?.username || '未知用户';
+  return user?.username || `未知用户(${userId})`;
 };
-
-const getAssociatedUsers = (subAccounts: SubAccountDTO[] | undefined): string => {
-  if (!subAccounts?.length) return '无关联用户';
-
-  const usernames = new Set<string>();
-  for (const subAccount of subAccounts) {
+const getAssociatedUsers = (subAccount: SubAccountDTO): string => {
     if (subAccount.users?.length) {
-      subAccount.users.forEach(user => usernames.add(user.username));
+        return subAccount.users.map(u => u.username || getUserName(u.userId)).join(', ');
     }
-  }
-
-  return usernames.size > 0 ? Array.from(usernames).join(', ') : '无关联用户';
+    console.warn(`子账户 ${subAccount.subAccountId} 无关联用户`);
+    return '无关联用户';
 };
 
 const debugSubAccount = async (subAccount: SubAccountDTO) => {
   try {
-    console.log(`开始获取子账户 ${subAccount.subAccountId} 的详细信息...`);
+    console.log(`调试子账户 ${subAccount.subAccountId}...`);
     const account = accounts.value.find(a => a.accountId === subAccount.accountId);
-    console.log('子账户信息:', subAccount);
-    console.log('所属账户信息:', account);
-    alert(`子账户信息:\n${JSON.stringify(subAccount, null, 2)}\n\n所属账户信息:\n${JSON.stringify(account, null, 2)}`);
+    console.log('子账户信息:', {
+      subAccountId: subAccount.subAccountId,
+      accountName: subAccount.accountName,
+      accountId: subAccount.accountId,
+      accountNumber: subAccount.accountNumber,
+      users: subAccount.users?.map(u => ({ userId: u.userId, username: u.username })) || []
+    });
+    console.log('所属账户信息:', {
+      accountId: account?.accountId,
+      accountName: account?.accountName,
+      userId: account?.userId,
+      username: account?.userId ? getUserName(account.userId) : '未知用户'
+    });
+    alert(`子账户信息:\n${JSON.stringify({
+      subAccountId: subAccount.subAccountId,
+      accountName: subAccount.accountName,
+      accountNumber: subAccount.accountNumber,
+      users: subAccount.users?.map(u => u.username) || []
+    }, null, 2)}\n\n所属账户信息:\n${JSON.stringify({
+      accountId: account?.accountId,
+      accountName: account?.accountName,
+      username: account?.userId ? getUserName(account.userId) : '未知用户'
+    }, null, 2)}`);
   } catch (err: any) {
-    console.error(`获取子账户信息失败:`, err);
-    alert(`获取失败: ${err.message}`);
+    console.error(`调试子账户失败:`, err);
+    alert(`调试失败: ${err.message}`);
   }
 };
 
 const debugAccountOverview = async () => {
   try {
-    console.log('开始调试账户概览...');
+    console.log('调试账户概览...');
+    console.log('当前用户:', currentUser.value);
     console.log('账户类型列表:', accountTypes.value);
-    console.log('账户列表:', accounts.value);
-    console.log('子账户列表:', subAccounts.value);
-    console.log('分组后的子账户:', groupedSubAccounts.value);
-    
-    // 检查每个账户类型的子账户数量
+    console.log('用户列表:', users.value.map(u => ({ userId: u.userId, username: u.username })));
+    console.log('账户列表:', accounts.value.map(a => ({
+      accountId: a.accountId,
+      accountName: a.accountName,
+      userId: a.userId,
+      username: a.userId ? getUserName(a.userId) : '未知用户'
+    })));
+    console.log('子账户列表:', subAccounts.value.map(sa => ({
+      subAccountId: sa.subAccountId,
+      accountName: sa.accountName,
+      accountId: sa.accountId,
+      accountNumber: sa.accountNumber,
+      users: sa.users?.map(u => u.username) || [],
+      accountUser: accounts.value.find(a => a.accountId === sa.accountId)?.userId
+        ? getUserName(accounts.value.find(a => a.accountId === sa.accountId)!.userId)
+        : '无用户'
+    })));
+    console.log('分组后的子账户:', Object.entries(groupedSubAccounts.value).map(([typeId, subAccounts]) => ({
+      typeId,
+      typeName: typeId === '0' ? '未分类' : getAccountTypeName(Number(typeId)),
+      subAccounts: subAccounts.map(sa => ({
+        subAccountId: sa.subAccountId,
+        accountName: sa.accountName,
+        accountNumber: sa.accountNumber,
+        accountUser: accounts.value.find(a => a.accountId === sa.accountId)?.userId
+          ? getUserName(accounts.value.find(a => a.accountId === sa.accountId)!.userId)
+          : '无用户'
+      }))
+    })));
+
     accountTypes.value.forEach(type => {
       const subAccountsInType = groupedSubAccounts.value[type.typeId] || [];
       console.log(`账户类型 ${type.typeName} (${type.typeId}) 的子账户数量:`, subAccountsInType.length);
       if (subAccountsInType.length === 0) {
         console.log(`警告: 账户类型 ${type.typeName} 没有子账户`);
-        // 检查是否有账户属于该类型
         const accountsInType = accounts.value.filter(a => a.typeId === type.typeId);
         console.log(`该类型的账户数量:`, accountsInType.length);
-        if (accountsInType.length > 0) {
-          console.log('该类型的账户:', accountsInType);
-        }
+        console.log('该类型的账户:', accountsInType.map(a => ({
+          accountId: a.accountId,
+          accountName: a.accountName,
+          userId: a.userId,
+          username: a.userId ? getUserName(a.userId) : '未知用户'
+        })));
       }
     });
-    
+
     alert('调试信息已输出到控制台，请按F12查看');
   } catch (err: any) {
     console.error('调试失败:', err);
@@ -336,6 +362,12 @@ const debugAccountOverview = async () => {
 onMounted(async () => {
   try {
     loading.value = true;
+    await authStore.checkAuth();
+    if (!authStore.currentUser) {
+      error.value = '请先登录';
+      router.push({ name: 'login' });
+      return;
+    }
     await fetchAccountTypes();
     await fetchAccounts();
     await Promise.all([
@@ -350,7 +382,6 @@ onMounted(async () => {
     loading.value = false;
   }
 });
-
 </script>
 
 <template>
@@ -375,20 +406,24 @@ onMounted(async () => {
     <div v-else>
       <!-- 账户卡片列表 -->
       <div class="accounts-grid">
-        <div v-for="type in accountTypes" :key="type.typeId" class="account-type-section">
+        <div v-for="type in [...accountTypes, { typeId: 0, typeName: '未分类' }]" 
+             :key="type.typeId" 
+             class="account-type-section">
           <h2 class="account-type-title">{{ type.typeName }}</h2>
           <div class="sub-accounts-grid">
             <div v-if="groupedSubAccounts[type.typeId]?.length > 0">
               <div v-for="subAccount in groupedSubAccounts[type.typeId]" 
                    :key="subAccount.subAccountId" 
                    class="account-card"
-                   @click="navigateToAccount(accounts.find(a => a.accountId === subAccount.accountId) || accounts[0])">
+                   @click="navigateToAccount(accounts.find(a => a.accountId === subAccount.accountId))">
                 <div class="account-header">
                   <h3>{{ subAccount.accountName }}</h3>
+                  <button @click.stop="debugSubAccount(subAccount)" class="debug-btn">调试</button>
                 </div>
                 <div class="account-info">
                   <div class="account-number">账号: {{ subAccount.accountNumber }}</div>
                   <div class="account-balance">余额: ¥{{ Number(subAccount.balance).toFixed(2) }}</div>
+                  <div class="account-users">用户: {{ getAssociatedUsers(subAccount) }}</div>
                 </div>
               </div>
             </div>
@@ -465,7 +500,6 @@ onMounted(async () => {
 
 .accounts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
@@ -510,7 +544,7 @@ onMounted(async () => {
   margin-top: 10px;
 }
 
-.account-number {
+.account-number, .account-users {
   font-size: 0.9rem;
   color: #666;
   margin-bottom: 5px;
@@ -520,6 +554,7 @@ onMounted(async () => {
   font-size: 1.1rem;
   color: #2196F3;
   font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .recent-transactions {
@@ -645,36 +680,6 @@ onMounted(async () => {
   background-color: #ff9800;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-.debug-btn:hover {
-  background-color: #f57c00;
-}
-
-.no-accounts {
-  text-align: center;
-  color: #666;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  margin: 10px 0;
-}
-
-.account-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.debug-btn {
-  background-color: #ff9800;
-  color: white;
-  border: none;
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
@@ -688,19 +693,5 @@ onMounted(async () => {
 .header-actions {
   display: flex;
   gap: 10px;
-}
-
-.debug-btn {
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.debug-btn:hover {
-  background-color: #f57c00;
 }
 </style>

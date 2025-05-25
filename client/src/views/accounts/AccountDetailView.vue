@@ -13,8 +13,8 @@
       <div class="header">
         <h1>{{ account.accountName }}</h1>
         <div class="actions">
-          <button @click="editAccount" class="edit-btn">编辑</button>
-          <button @click="deleteAccount" class="delete-btn">删除</button>
+          <!-- <button @click="editAccount" class="edit-btn">编辑</button>
+          <button @click="deleteAccount" class="delete-btn">删除</button> -->
         </div>
       </div>
 

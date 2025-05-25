@@ -29,16 +29,14 @@
     </div>
 
     <div v-else>
-      <!-- 排序按钮 -->
       <div class="sort-controls">
         <button @click="toggleSortOrder" class="sort-btn">
           {{ sortOrder === 'asc' ? '按最早日期排序' : '按最近日期排序' }}
         </button>
       </div>
 
-      <!-- 按日期分组的交易记录 -->
       <div class="transactions-list">
-        <div v-for="(group, date) in groupedTransactions" :key="String(date)" class="transaction-group">
+        <div v-for="(group, date) in groupedTransactions" :key="date" class="transaction-group">
           <div class="date-header">{{ formatGroupDate(date) }}</div>
           <div class="transaction-items">
             <div 
@@ -80,9 +78,11 @@
             </div>
           </div>
         </div>
+        <div v-if="!Object.keys(groupedTransactions).length" class="no-transactions">
+          暂无交易记录
+        </div>
       </div>
 
-      <!-- 分页控制 -->
       <div class="pagination-controls">
         <button 
           @click="changePage(currentPage - 1)" 
@@ -102,7 +102,6 @@
       </div>
     </div>
 
-    <!-- 新增/编辑交易记录对话框 -->
     <div v-if="showAddTransaction" class="modal">
       <div class="modal-content">
         <TransactionForm
@@ -117,7 +116,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { transactionsService } from '@/api/services/transactions';
 import { accountsService } from '@/api/services/accounts';
 import { usersService } from '@/api/services/users';
@@ -128,9 +127,6 @@ import type { TransactionTypeDTO } from '@/api/models/transactions/transaction-t
 import type { UserDTO } from '@/api/models/user/user-dto';
 import type { AccountDTO } from '@/api/models/accounts/account-dto';
 import TransactionForm from '@/components/transactions/TransactionForm.vue';
-import { useRoute } from 'vue-router';
-
-const route = useRoute();
 
 interface TransactionWithUser extends TransactionDTO {
   user?: UserDTO;
@@ -147,12 +143,14 @@ interface TransactionQueryParams {
 }
 
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const error = ref<string | null>(null);
-const transactions = ref<TransactionDTO[]>([]);
+const transactions = ref<TransactionWithUser[]>([]);
 const subAccounts = ref<SubAccountDTO[]>([]);
 const transactionTypes = ref<TransactionTypeDTO[]>([]);
 const users = ref<UserDTO[]>([]);
+const accounts = ref<AccountDTO[]>([]);
 const showAddTransaction = ref(false);
 const editingTransaction = ref<TransactionWithUser | undefined>();
 const currentPage = ref(1);
@@ -162,323 +160,312 @@ const dateRange = ref<{ start: string; end: string } | null>(null);
 const selectedSubAccountId = ref<number | undefined>(undefined);
 const selectedUserId = ref<number | undefined>(undefined);
 const sortOrder = ref<'asc' | 'desc'>('desc');
-const accounts = ref<AccountDTO[]>([]);
 const selectedAccountTypeId = ref<number | undefined>(undefined);
 
 const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.currentUser?.role === 'ADMIN');
 
-// 添加账户信息缓存
 const accountCache = ref<Record<number, { accountName: string; accountNumber: string }>>({});
 
-// 预加载账户信息
 const preloadAccountInfo = async (subAccountId: number) => {
-  if (accountCache.value[subAccountId]) return;
-  
-  try {
-    const subAccount = await accountsService.getSubAccount(subAccountId);
-    const account = await accountsService.getAccount(subAccount.accountId);
-    accountCache.value[subAccountId] = {
-      accountName: account.accountName,
-      accountNumber: subAccount.accountNumber
-    };
-  } catch (err) {
-    console.error('预加载账户信息失败:', err);
-  }
+    if (accountCache.value[subAccountId]) return;
+    try {
+        const subAccount = await accountsService.getSubAccount(subAccountId);
+        const account = await accountsService.getAccount(subAccount.accountId);
+        accountCache.value[subAccountId] = {
+            accountName: account.accountName,
+            accountNumber: subAccount.accountNumber
+        };
+    } catch (err: any) {
+        console.warn(`预加载子账户 ${subAccountId} 失败:`, err);
+        accountCache.value[subAccountId] = {
+            accountName: `未知账户 (ID: ${subAccountId})`,
+            accountNumber: ''
+        };
+    }
 };
 
-// 按日期分组的交易记录
 const groupedTransactions = computed(() => {
-  // 分组
-  const groups: { [key: string]: TransactionWithUser[] } = {};
-  transactions.value.forEach(transaction => {
-    const date = new Date(transaction.time).toISOString().split('T')[0];
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(transaction);
-  });
-  
-  // 日期分组排序
-  const ordered = Object.entries(groups).sort((a, b) => {
-    return sortOrder.value === 'desc'
-      ? new Date(b[0]).getTime() - new Date(a[0]).getTime()
-      : new Date(a[0]).getTime() - new Date(b[0]).getTime();
-  });
-  
-  return Object.fromEntries(ordered);
+    const groups: { [key: string]: TransactionWithUser[] } = {};
+    transactions.value.forEach(transaction => {
+        const date = new Date(transaction.time).toISOString().split('T')[0];
+        if (!groups[date]) {
+            groups[date] = [];
+        }
+        groups[date].push(transaction);
+    });
+    const ordered = Object.entries(groups).sort((a, b) => {
+        return sortOrder.value === 'desc'
+            ? new Date(b[0]).getTime() - new Date(a[0]).getTime()
+            : new Date(a[0]).getTime() - new Date(b[0]).getTime();
+    });
+    return Object.fromEntries(ordered);
 });
 
 const fetchUsers = async () => {
-  try {
-    if (isAdmin.value) {
-      // 管理员获取所有用户列表
-      const usersList = await usersService.getUsers();
-      users.value = usersList;
-    } else {
-      // 普通用户只能看到自己
-      const currentUser = authStore.currentUser;
-      if (currentUser) {
-        users.value = [currentUser];
-        selectedUserId.value = currentUser.userId;
-      }
+    try {
+        if (isAdmin.value) {
+            users.value = await usersService.getUsers();
+        } else {
+            const currentUser = authStore.currentUser;
+            if (currentUser) {
+                users.value = [currentUser];
+                selectedUserId.value = currentUser.userId;
+            }
+        }
+    } catch (err) {
+        console.error('获取用户列表失败:', err);
     }
-  } catch (err) {
-    console.error('获取用户列表失败:', err);
-  }
 };
 
 const fetchTransactions = async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    const params: TransactionQueryParams = {
-      page: Math.max(0, currentPage.value - 1),
-      size: pageSize,
-      sort: sortOrder.value
-    };
-    
-    if (selectedSubAccountId.value) {
-      params.subAccountId = selectedSubAccountId.value;
+    loading.value = true;
+    error.value = null;
+    try {
+        const params: TransactionQueryParams = {
+            page: Math.max(0, currentPage.value - 1),
+            size: pageSize,
+            sort: sortOrder.value
+        };
+        if (selectedSubAccountId.value) {
+            params.subAccountId = selectedSubAccountId.value;
+        }
+        if (dateRange.value?.start) {
+            params.startDate = dateRange.value.start;
+        }
+        if (dateRange.value?.end) {
+            params.endDate = dateRange.value.end;
+        }
+        if (selectedUserId.value) {
+            params.userId = selectedUserId.value;
+        }
+        console.log('发送请求参数:', params);
+        const result = await transactionsService.getTransactions(params);
+        const userIds = [...new Set(result.transactions.map(t => t.userId))];
+        const usersList = await Promise.all(
+            userIds.map(id => usersService.getUser(id))
+        );
+        transactions.value = result.transactions.map(transaction => ({
+            ...transaction,
+            user: usersList.find(u => u.userId === transaction.userId)
+        }));
+        totalItems.value = result.total;
+        await Promise.all(
+            [...new Set(transactions.value.map(t => t.subAccountId))].map(id => preloadAccountInfo(id))
+        );
+    } catch (err: any) {
+        console.error('获取交易记录失败:', err);
+        error.value = err.message || '获取交易记录失败';
+    } finally {
+        loading.value = false;
     }
-    
-    if (dateRange.value?.start) {
-      params.startDate = dateRange.value.start;
-    }
-    
-    if (dateRange.value?.end) {
-      params.endDate = dateRange.value.end;
-    }
-    
-    if (selectedUserId.value) {
-      params.userId = selectedUserId.value;
-    }
-
-    
-    console.log('发送请求参数:', params);
-    
-    const result = await transactionsService.getTransactions(params);
-    
-    // 获取所有相关用户的信息
-    const userIds = [...new Set(result.transactions.map(t => t.userId))];
-    const usersList = await Promise.all(
-      userIds.map(id => usersService.getUser(id))
-    );
-    
-    // 将用户信息添加到交易记录中
-    const transactionsWithUsers = result.transactions.map(transaction => ({
-      ...transaction,
-      user: usersList.find(u => u.userId === transaction.userId)
-    }));
-    
-    // 更新交易记录
-    transactions.value = transactionsWithUsers;
-    totalItems.value = result.total;
-
-    // 预加载所有交易记录的账户信息
-    await Promise.all(
-      transactionsWithUsers.map(t => preloadAccountInfo(t.subAccountId))
-    );
-  } catch (err: any) {
-    console.error('获取交易记录失败:', err);
-    error.value = err.message || '获取交易记录失败';
-  } finally {
-    loading.value = false;
-  }
 };
 
 const fetchSubAccounts = async () => {
-  try {
-    subAccounts.value = await accountsService.getAllSubAccounts();
-  } catch (err) {
-    console.error('获取子账户列表失败:', err);
-  }
+    try {
+        subAccounts.value = await accountsService.getAllSubAccounts();
+    } catch (err) {
+        console.error('获取子账户列表失败:', err);
+    }
 };
 
 const fetchTransactionTypes = async () => {
-  try {
-    transactionTypes.value = await transactionsService.getTransactionTypes();
-  } catch (err) {
-    console.error('获取交易类型列表失败:', err);
-  }
+    try {
+        transactionTypes.value = await transactionsService.getTransactionTypes();
+    } catch (err) {
+        console.error('获取交易类型列表失败:', err);
+    }
 };
 
 const fetchAccounts = async () => {
-  try {
-    accounts.value = await accountsService.getAccounts();
-  } catch (err) {
-    console.error('获取账户列表失败:', err);
-  }
+    try {
+        accounts.value = await accountsService.getAccounts();
+    } catch (err) {
+        console.error('获取账户列表失败:', err);
+    }
 };
 
 const getAccountName = (subAccountId: number) => {
-  const subAccount = subAccounts.value.find(sa => sa.subAccountId === subAccountId);
-  if (!subAccount) return '未知账户';
-  
-  const account = accounts.value.find(a => a.accountId === subAccount.accountId);
-  if (!account) return '未知账户';
-  
-  return `${account.accountName} (${subAccount.accountNumber})`;
+    if (accountCache.value[subAccountId]) {
+        const { accountName, accountNumber } = accountCache.value[subAccountId];
+        return `${accountName} (${accountNumber})`;
+    }
+    const subAccount = subAccounts.value.find(sa => sa.subAccountId === subAccountId);
+    if (subAccount) {
+        const account = accounts.value.find(a => a.accountId === subAccount.accountId);
+        if (account) {
+            return `${account.accountName} (${subAccount.accountNumber})`;
+        }
+    }
+    return `未知账户 (ID: ${subAccountId})`;
 };
 
 const getTransactionTypeName = (typeId: number) => {
-  const type = transactionTypes.value.find(t => t.typeId === typeId);
-  return type ? type.typeName : '未知类型';
+    const type = transactionTypes.value.find(t => t.typeId === typeId);
+    return type ? type.typeName : '未知类型';
 };
 
 const editTransaction = (transaction: TransactionWithUser) => {
-  editingTransaction.value = transaction;
-  showAddTransaction.value = true;
+    editingTransaction.value = transaction;
+    showAddTransaction.value = true;
 };
 
 const deleteTransaction = async (transaction: TransactionWithUser) => {
-  if (!confirm('确定要删除这条交易记录吗？')) return;
-  
-  try {
-    await transactionsService.deleteTransaction(transaction.transactionId);
-    // 更新子账户余额
-    await accountsService.recalculateBalance(transaction.subAccountId);
-    // 刷新交易记录
-    await fetchTransactions();
-  } catch (err: any) {
-    alert('删除失败: ' + (err.message || '未知错误'));
-  }
+    if (!confirm('确定要删除这条交易记录吗？')) return;
+    try {
+        await transactionsService.deleteTransaction(transaction.transactionId);
+        await accountsService.recalculateBalance(transaction.subAccountId);
+        await fetchTransactions();
+    } catch (err: any) {
+        error.value = '删除失败: ' + (err.message || '未知错误');
+    }
 };
 
 const handleTransactionSubmit = async (transaction: TransactionWithUser) => {
-  closeTransactionForm();
-  // 强制重新获取数据
-  await fetchTransactions();
-  // 如果当前页面没有数据，自动跳转到第一页
-  if (transactions.value.length === 0 && currentPage.value > 1) {
-    currentPage.value = 1;
+    closeTransactionForm();
     await fetchTransactions();
-  }
+    if (transactions.value.length === 0 && currentPage.value > 1) {
+        currentPage.value = 1;
+        await fetchTransactions();
+    }
 };
 
 const closeTransactionForm = () => {
-  showAddTransaction.value = false;
-  editingTransaction.value = undefined;
+    showAddTransaction.value = false;
+    editingTransaction.value = undefined;
 };
 
-const formatGroupDate = (dateString: string | number) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: 'Asia/Shanghai'
-  });
+const formatGroupDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Asia/Shanghai'
+    });
 };
 
 const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Shanghai'
-  });
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Shanghai'
+    });
 };
 
-// 添加总页数计算属性
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize));
 
-// 修改changePage函数
 const changePage = async (page: number) => {
-  if (page < 1 || page > totalPages.value) return;
-  currentPage.value = page;
-  await fetchTransactions();
+    if (page < 1 || page > totalPages.value) return;
+    currentPage.value = page;
+    await fetchTransactions();
 };
 
-// 修改toggleSortOrder函数
 const toggleSortOrder = () => {
-  sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc';
-  currentPage.value = 1; // 切换排序时重置到第一页
-  fetchTransactions();
+    sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc';
+    currentPage.value = 1;
+    fetchTransactions();
 };
 
 const navigateToSubAccount = (transaction: TransactionWithUser) => {
-  router.push({
-    name: 'sub-account-details',
-    params: { id: transaction.subAccountId }
-  });
+    router.push({
+        name: 'sub-account-details',
+        params: { id: transaction.subAccountId }
+    });
 };
 
 const debugFetchData = async () => {
-  try {
-    await fetchUsers();
-    await fetchTransactions();
-  } catch (err: any) {
-    console.error('调试过程出错:', err);
-  }
-};
-
-const handleUserFilterChange = () => {
-  currentPage.value = 0;
-  fetchTransactions();
-};
-
-const loadMore = async () => {
-  if (loading.value || currentPage.value * pageSize >= totalItems.value) return;
-  currentPage.value++;
-  await fetchTransactions();
+    try {
+        await Promise.all([
+            fetchUsers(),
+            fetchTransactions(),
+            fetchSubAccounts(),
+            fetchTransactionTypes(),
+            fetchAccounts()
+        ]);
+        console.log('调试数据:', {
+            transactions: transactions.value,
+            subAccounts: subAccounts.value,
+            accountCache: accountCache.value
+        });
+    } catch (err: any) {
+        console.error('调试过程出错:', err);
+    }
 };
 
 onMounted(async () => {
-  const routeUserId = route.query.userId;
-  if (!isAdmin.value && Number(routeUserId) !== authStore.currentUser?.userId) {
-    selectedUserId.value = authStore.currentUser?.userId;
-  } else if (routeUserId) {
-    selectedUserId.value = Number(routeUserId);
-  }
-  await Promise.all([
-    fetchUsers(),
-    fetchTransactions(),
-    fetchSubAccounts(),
-    fetchTransactionTypes(),
-    fetchAccounts()
-  ]);
+    const routeUserId = route.query.userId;
+    if (!isAdmin.value && Number(routeUserId) !== authStore.currentUser?.userId) {
+        selectedUserId.value = authStore.currentUser?.userId;
+    } else if (routeUserId) {
+        selectedUserId.value = Number(routeUserId);
+    }
+    try {
+        loading.value = true;
+        await Promise.all([
+            fetchUsers(),
+            fetchTransactions(),
+            fetchSubAccounts(),
+            fetchTransactionTypes(),
+            fetchAccounts()
+        ]);
+    } catch (err: any) {
+        error.value = err.message || '加载数据失败';
+    } finally {
+        loading.value = false;
+    }
 });
 </script>
 
 <style scoped>
 .transactions-view {
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .header h1 {
   margin: 0;
   color: #333;
+  font-size: 1.8rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .add-btn {
-  background-color: var(--primary-color);
+  background-color: #2196f3;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .add-btn:hover {
-  background-color: var(--primary-color-dark);
+  background-color: #1976d2;
 }
 
 .sort-controls {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .sort-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border: none;
   padding: 6px 14px;
@@ -488,13 +475,13 @@ onMounted(async () => {
 }
 
 .sort-btn:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
 }
 
 .transactions-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .transaction-group {
@@ -505,11 +492,11 @@ onMounted(async () => {
 }
 
 .date-header {
-  background-color: #f8f9fa;
+  background-color: #f5f5f5;
   padding: 10px 15px;
   font-weight: bold;
   color: #333;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid #eee;
 }
 
 .transaction-items {
@@ -536,12 +523,12 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .transaction-time {
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .transaction-amount {
@@ -550,52 +537,50 @@ onMounted(async () => {
 }
 
 .transaction-amount.income {
-  color: #4CAF50;
+  color: #2e7d32;
 }
 
 .transaction-amount.expense {
   color: #f44336;
 }
 
-.transaction-details {
-  color: #666;
-  margin: 10px 0;
-}
-
 .transaction-details p {
   margin: 5px 0;
+  color: #555;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 
 .label {
-  color: #999;
+  color: #888;
   min-width: 50px;
+  font-size: 0.85rem;
 }
 
 .transaction-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-top: 10px;
 }
 
 .edit-btn,
 .delete-btn {
-  padding: 4px 8px;
+  padding: 4px 10px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .edit-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
 .edit-btn:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
 }
 
 .delete-btn {
@@ -611,19 +596,18 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
 }
 
 .page-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--primary-color);
+  background-color: #2196f3;
   color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .page-btn:disabled {
@@ -631,8 +615,13 @@ onMounted(async () => {
   cursor: not-allowed;
 }
 
+.page-btn:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
 .page-info {
   color: #666;
+  font-size: 0.9rem;
 }
 
 .modal {
@@ -641,7 +630,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -655,6 +644,7 @@ onMounted(async () => {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  padding: 20px;
 }
 
 .loading {
@@ -664,7 +654,7 @@ onMounted(async () => {
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid var(--primary-color);
+  border-top: 4px solid #2196f3;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -678,9 +668,16 @@ onMounted(async () => {
 }
 
 .error {
-  color: var(--danger-color);
+  color: #f44336;
   text-align: center;
   padding: 20px;
+}
+
+.no-transactions {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-size: 1rem;
 }
 
 .debug-btn {
@@ -690,7 +687,7 @@ onMounted(async () => {
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 10px;
+  font-size: 0.9rem;
 }
 
 .debug-btn:hover {
@@ -701,7 +698,7 @@ onMounted(async () => {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-right: 10px;
+  font-size: 0.9rem;
   min-width: 120px;
 }
-</style> 
+</style>
